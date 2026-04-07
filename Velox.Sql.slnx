@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Velox.Sql.Core/Velox.Sql.Core.csproj" />
+  <Project Path="Velox.Sql.Tests/Velox.Sql.Tests.csproj" />
+  <Project Path="Velox.Sql/Velox.Sql.csproj" />
+  <Project Path="Velox.Sql.Benchmarks/Velox.Sql.Benchmarks.csproj" />
+</Solution>

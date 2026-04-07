@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+		<DebugType>embedded</DebugType>
+		<TieredPGO>true</TieredPGO>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Filter\**" />
+		<EmbeddedResource Remove="Filter\**" />
+		<None Remove="Filter\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Velox.Sql.Core\Velox.Sql.Core.csproj" />
+	</ItemGroup>
+</Project>
