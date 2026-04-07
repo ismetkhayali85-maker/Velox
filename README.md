@@ -66,8 +66,8 @@ var debugSql = builder.ToDebugSql();
 
 ### Examples & Documentation
 
-*   [PostgreSQL Examples](file:///C:/Users/user/Documents/lib/Velox.Sql.Tests/Postgres/)
-*   [ClickHouse Examples](file:///C:/Users/user/Documents/lib/Velox.Sql.Tests/ClickHouse/)
+*   [PostgreSQL Examples](Velox.Sql.Tests/Postgres/)
+*   [ClickHouse Examples](Velox.Sql.Tests/ClickHouse/)
 
 ### License
 
