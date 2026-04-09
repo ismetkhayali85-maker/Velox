@@ -9,7 +9,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select()
             .ToDebugSql();
 
@@ -19,7 +19,7 @@ public class SelectTests : TestBase
     [Fact]
     public void SelectSpecificColumn_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Name)
             .ToDebugSql();
 
@@ -29,7 +29,7 @@ public class SelectTests : TestBase
     [Fact]
     public void SelectMultipleColumns_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => new { x.Id, x.Name })
             .ToDebugSql();
 
@@ -39,7 +39,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Distinct_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Distinct(x => x.Name)
             .ToDebugSql();
 
@@ -49,7 +49,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Avg_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Avg(x => x.Id, "AverageId")
             .ToDebugSql();
 
@@ -59,7 +59,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Sum_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Sum(x => x.Id, "TotalId")
             .ToDebugSql();
 
@@ -69,7 +69,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Min_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Min(x => x.Id, "MinId")
             .ToDebugSql();
 
@@ -79,7 +79,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Max_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Max(x => x.Id, "MaxId")
             .ToDebugSql();
 
@@ -89,7 +89,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Count_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Count(x => x.Id, false, "IdCount")
             .ToDebugSql();
 
@@ -99,7 +99,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_CountAll_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Count(null, false, "TotalCount")
             .ToDebugSql();
 
@@ -109,7 +109,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_DistinctCount_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .CountDistinct(x => x.Name, "UniqueNames")
             .ToDebugSql();
 
@@ -119,7 +119,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Any_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Any(x => x.Name, "AnyName")
             .ToDebugSql();
 
@@ -129,7 +129,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_AnyLast_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .AnyLast(x => x.Name, "LastEntry")
             .ToDebugSql();
 
@@ -139,7 +139,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_ToUnixTimestamp_ReturnsCorrectSql()
     {
-        var sql = DbQuery<DateTimeEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<DateTimeEntity>()
             .Select(s => s.ToUnixTimestamp("2023-01-01 00:00:00", "UnixTime"))
             .ToDebugSql();
 
@@ -149,7 +149,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_MixedAggregates_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(s => s
                 .Avg(new Column("id", "AvgId"))
                 .Sum(new Column("id", "SumId"))

@@ -11,7 +11,7 @@ public class JoinTests : TestBase
     [Fact]
     public void InnerJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .InnerJoin<PostgresJoinEntity, PostgresTestEntity>(
                 j => j.ParentId,
@@ -25,7 +25,7 @@ public class JoinTests : TestBase
     [Fact]
     public void InnerJoin_WithSelector_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .InnerJoin<PostgresJoinEntity, PostgresTestEntity>(
                 x => x.ParentId,
                 y => y.Id,
@@ -38,7 +38,7 @@ public class JoinTests : TestBase
     [Fact]
     public void LeftJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .LeftJoin<PostgresJoinEntity, PostgresTestEntity>(
                 j => j.ParentId,
@@ -51,7 +51,7 @@ public class JoinTests : TestBase
     [Fact]
     public void RightJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .RightJoin<PostgresJoinEntity, PostgresTestEntity>(
                 j => j.ParentId,
@@ -64,7 +64,7 @@ public class JoinTests : TestBase
     [Fact]
     public void FullJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .FullJoin<PostgresJoinEntity, PostgresTestEntity>(
                 j => j.ParentId,
@@ -77,7 +77,7 @@ public class JoinTests : TestBase
     [Fact]
     public void CrossJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .CrossJoin<PostgresJoinEntity>()
             .ToDebugSql();

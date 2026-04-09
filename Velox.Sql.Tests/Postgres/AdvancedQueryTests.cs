@@ -9,7 +9,7 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void FluentHaving_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .From<PostgresTestEntity>()
             .GroupBy(x => x.Id)
@@ -23,9 +23,9 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void Union_ReturnsCorrectSql()
     {
-        var query1 = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var query1 = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id);
-        var query2 = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var query2 = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id);
         
         var sql = query1.Union(query2)
@@ -37,9 +37,9 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void UnionAll_ReturnsCorrectSql()
     {
-        var query1 = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var query1 = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id);
-        var query2 = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var query2 = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id);
         
         var sql = query1.UnionAll(query2)
@@ -51,9 +51,9 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void Intersect_ReturnsCorrectSql()
     {
-        var query1 = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var query1 = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id);
-        var query2 = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var query2 = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id);
         
         var sql = query1.Intersect(query2)
@@ -65,9 +65,9 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void Except_ReturnsCorrectSql()
     {
-        var query1 = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var query1 = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id);
-        var query2 = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var query2 = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id);
         
         var sql = query1.Except(query2)
@@ -79,7 +79,7 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void SubQuery_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .SubQuery<PostgresTestEntity>(sub => sub.Select(s => s.Description).Where(w => w.Id == 1))
             .ToDebugSql();
@@ -90,7 +90,7 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void ComplexJoins_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .FullJoin<PostgresTestEntity, PostgresTestEntity>(
                 x => x.Id, 
@@ -105,7 +105,7 @@ public class AdvancedQueryTests : TestBase
     public void Returning_ReturnsCorrectSql()
     {
         var entity = new PostgresTestEntity { Id = 1, Description = "Test" };
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Insert(entity)
             .Returning(x => x.Id)
             .ToDebugSql();

@@ -8,7 +8,7 @@ public class InsertTests : TestBase
     public void Insert_Entity_ReturnsCorrectSql()
     {
         var entity = new PostgresTestEntity { Id = 1, Description = "Test" };
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Insert(entity)
             .ToDebugSql();
 
@@ -19,7 +19,7 @@ public class InsertTests : TestBase
     public void Insert_WithReturning_ReturnsCorrectSql()
     {
         var entity = new PostgresTestEntity { Id = 1, Description = "Test" };
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Insert(entity)
             .Returning(x => x.Id)
             .ToDebugSql();
@@ -31,7 +31,7 @@ public class InsertTests : TestBase
     public void Insert_WithReturningAll_ReturnsCorrectSql()
     {
         var entity = new PostgresTestEntity { Id = 1, Description = "Test" };
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Insert(entity)
             .ReturningAll()
             .ToDebugSql();
@@ -48,7 +48,7 @@ public class InsertTests : TestBase
             new PostgresTestEntity { Id = 2, Description = "B" }
         };
 
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .BulkInsert(entities)
             .ToDebugSql();
 
@@ -59,7 +59,7 @@ public class InsertTests : TestBase
     public void Insert_Nullable_IncludesNull_ReturnsCorrectSql()
     {
         var entity = new PostgresNullableTestEntity { Id = 1, Description = null };
-        var sql = DbQuery<PostgresNullableTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresNullableTestEntity>()
             .Insert(entity)
             .ToDebugSql();
 

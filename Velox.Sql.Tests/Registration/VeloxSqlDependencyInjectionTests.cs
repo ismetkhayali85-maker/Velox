@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Velox.Sql;
 using Velox.Sql.DependencyInjection;
 using Velox.Sql.Impl;
 using Velox.Sql.Registration;
@@ -30,6 +31,12 @@ public sealed class VeloxSqlDependencyInjectionTests
         Assert.Equal(typeof(DiscoveryChEntity), ch.GetMap(typeof(DiscoveryChEntity)).EntityType);
         Assert.NotEmpty(discovery.PostgresMappers);
         Assert.NotEmpty(discovery.ClickHouseMappers);
+
+        var velox = provider.GetRequiredService<IVeloxSql>();
+        Assert.Same(pg, provider.GetRequiredService<PgSqlConfiguration>());
+        Assert.Same(ch, provider.GetRequiredService<ClickHouseSqlConfiguration>());
+        Assert.NotNull(velox.Postgres<DiscoveryPgEntity>());
+        Assert.NotNull(velox.ClickHouse<DiscoveryChEntity>());
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
 
@@ -6,7 +7,7 @@ namespace Velox.Sql.Registration;
 
 /// <summary>
 /// Outcome of <see cref="VeloxSqlMapperDiscovery.Discover(System.Reflection.Assembly[])"/>:
-/// mapper instances grouped per engine, plus helpers to build configurations or assign <see cref="DbQuery"/> defaults.
+/// mapper instances grouped per engine, plus helpers to build configurations or <see cref="IVeloxSql"/>.
 /// </summary>
 public sealed class VeloxSqlDiscoveryResult
 {
@@ -30,13 +31,6 @@ public sealed class VeloxSqlDiscoveryResult
     public ClickHouseSqlConfiguration CreateClickHouseConfiguration() =>
         new ClickHouseSqlConfiguration(new List<IClassMapper>(ClickHouseMappers));
 
-    /// <summary>
-    /// Assigns <see cref="DbQuery.DefaultPostgresConfig"/> and <see cref="DbQuery.DefaultClickHouseConfig"/>
-    /// from this discovery result (convenience for non-DI hosts).
-    /// </summary>
-    public void ApplyToDbQuery()
-    {
-        DbQuery.DefaultPostgresConfig = CreatePostgresConfiguration();
-        DbQuery.DefaultClickHouseConfig = CreateClickHouseConfiguration();
-    }
+    /// <summary>Creates <see cref="IVeloxSql"/> from this discovery result (same as <c>new VeloxSql(this)</c>).</summary>
+    public IVeloxSql CreateVeloxSql() => new VeloxSql(this);
 }

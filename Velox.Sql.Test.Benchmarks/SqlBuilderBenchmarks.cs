@@ -30,32 +30,35 @@ public class SqlBuilderBenchmarks
         }
     }
 
+    private IVeloxSql _sql = null!;
+
     [GlobalSetup]
     public void Setup()
     {
         var mappers = new List<IClassMapper> { new BenchmarkEntityMapper() };
-        DbQuery.DefaultClickHouseConfig = new ClickHouseSqlConfiguration(mappers);
-        DbQuery.DefaultPostgresConfig = new PgSqlConfiguration(mappers);
+        var pg = new PgSqlConfiguration(mappers);
+        var ch = new ClickHouseSqlConfiguration(mappers);
+        _sql = new VeloxSql(pg, ch);
     }
 
     [Benchmark]
     public string ClickHouse_SimpleSelect()
     {
-        return DbQuery<BenchmarkEntity>.GetClickHouseBuilder()
+        return _sql.ClickHouse<BenchmarkEntity>()
             .ToDebugSql();
     }
 
     [Benchmark]
     public string Postgres_SimpleSelect()
     {
-        return DbQuery<BenchmarkEntity>.GetPostgresBuilder()
+        return _sql.Postgres<BenchmarkEntity>()
             .ToDebugSql();
     }
 
     [Benchmark]
     public string ClickHouse_ComplexQuery()
     {
-        return DbQuery<BenchmarkEntity>.GetClickHouseBuilder()
+        return _sql.ClickHouse<BenchmarkEntity>()
             .Select(x => x.Id)
             .Where(x => x.Id > 100)
             .GroupBy(x => x.Id)
@@ -68,7 +71,7 @@ public class SqlBuilderBenchmarks
     [Benchmark]
     public string Postgres_ComplexQuery()
     {
-        return DbQuery<BenchmarkEntity>.GetPostgresBuilder()
+        return _sql.Postgres<BenchmarkEntity>()
             .Select(x => x.Id)
             .Where(x => x.Id > 100)
             .GroupBy(x => x.Id)

@@ -5,7 +5,7 @@ public class ParameterizationTests : TestBase
     [Fact]
     public void Select_WithParameters_ReturnsCorrectSqlAndDictionary()
     {
-        var builder = DbQuery<TestEntity>.GetClickHouseBuilder();
+        var builder = VeloxRuntime.ClickHouse<TestEntity>();
         builder.Select()
                .Where(x => (x.Id == 10 && x.Name == "Test") || x.Id > 100);
 

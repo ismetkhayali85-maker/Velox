@@ -1,4 +1,5 @@
 using System.Reflection;
+using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Registration;
 using Velox.Sql.Tests.Support;
@@ -7,7 +8,7 @@ namespace Velox.Sql.Tests.Registration;
 
 /// <summary>
 /// Documents configuration styles: (1) <see cref="VeloxSqlMapperDiscovery.Discover(System.Reflection.Assembly[])"/>,
-/// (2) <see cref="VeloxSqlDiscoveryResult.ApplyToDbQuery"/> for static <see cref="DbQuery"/> defaults,
+/// (2) <see cref="VeloxSqlDiscoveryResult.CreateVeloxSql"/> for <see cref="IVeloxSql"/> without DI,
 /// (3) DI in <see cref="VeloxSqlDependencyInjectionTests"/>.
 /// Use <see cref="Velox.Sql.Tests.Support"/> assembly for clean assembly scans (no duplicate-entity conflicts).
 /// </summary>
@@ -74,28 +75,15 @@ public sealed class MapperDiscoveryTests
     }
 
     [Fact]
-    public void ApplyToDbQuery_SetsStaticDefaults_LikeManualStaticConfiguration()
+    public void CreateVeloxSql_FromDiscovery_BuildsSql()
     {
-        var previousPg = DbQuery.DefaultPostgresConfig;
-        var previousCh = DbQuery.DefaultClickHouseConfig;
-        try
-        {
-            var result = VeloxSqlMapperDiscovery.Discover(SupportAssembly);
-            result.ApplyToDbQuery();
+        var result = VeloxSqlMapperDiscovery.Discover(SupportAssembly);
+        IVeloxSql db = result.CreateVeloxSql();
 
-            Assert.NotNull(DbQuery.DefaultPostgresConfig);
-            Assert.NotNull(DbQuery.DefaultClickHouseConfig);
+        var sql = db.Postgres<DiscoveryPgEntity>()
+            .Select(x => x.Id)
+            .ToDebugSql();
 
-            var sql = DbQuery<DiscoveryPgEntity>.GetPostgresBuilder()
-                .Select(x => x.Id)
-                .ToDebugSql();
-
-            Assert.Contains("discovery_pg", sql, StringComparison.Ordinal);
-        }
-        finally
-        {
-            DbQuery.DefaultPostgresConfig = previousPg;
-            DbQuery.DefaultClickHouseConfig = previousCh;
-        }
+        Assert.Contains("discovery_pg", sql, StringComparison.Ordinal);
     }
 }

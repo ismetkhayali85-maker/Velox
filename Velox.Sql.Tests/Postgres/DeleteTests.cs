@@ -7,7 +7,7 @@ public class DeleteTests : TestBase
     [Fact]
     public void Delete_Specific_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Delete(x => x.Id == 50)
             .ToDebugSql();
 

@@ -10,7 +10,7 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void Final_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select()
             .Final()
             .ToDebugSql();
@@ -21,7 +21,7 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void AggregatesWithAlias_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Count(x => x.Id, "TotalCount")
             .Sum(x => x.Id, "TotalSum")
             .ToDebugSql();
@@ -33,7 +33,7 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void Having_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .From<TestEntity>()
             .GroupBy(x => x.Id)
@@ -47,9 +47,9 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void UnionAll_ReturnsCorrectSql()
     {
-        var query1 = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var query1 = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id);
-        var query2 = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var query2 = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id);
         
         var sql = query1.UnionAll(query2)
@@ -61,7 +61,7 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void AddValue_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .AddValue("1", "ConstValue")
             .ToDebugSql();
@@ -72,7 +72,7 @@ public class AdvancedQueryTests : TestBase
     [Fact]
     public void AddWhereValue_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select()
             .Where(x => x.Id == 1)
             .AddWhereValue("is_deleted = 0", isAnd: true)

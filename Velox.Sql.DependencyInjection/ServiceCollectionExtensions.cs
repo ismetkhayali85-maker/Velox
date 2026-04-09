@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Registration;
 
@@ -10,7 +11,8 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Scans <paramref name="mapperAssemblies"/> for attributed mappers and registers
-    /// <see cref="VeloxSqlDiscoveryResult"/>, <see cref="PgSqlConfiguration"/>, and <see cref="ClickHouseSqlConfiguration"/> as singletons.
+    /// <see cref="VeloxSqlDiscoveryResult"/>, <see cref="PgSqlConfiguration"/>, <see cref="ClickHouseSqlConfiguration"/>,
+    /// and <see cref="IVeloxSql"/> (factory-built <see cref="VeloxSql"/>) as a singleton.
     /// </summary>
     public static IServiceCollection AddVeloxSql(this IServiceCollection services, params Assembly[] mapperAssemblies) =>
         services.AddVeloxSql(configure: null, mapperAssemblies);
@@ -34,6 +36,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(_ => VeloxSqlMapperDiscovery.Discover(options.MapperAssemblies));
         services.AddSingleton(sp => sp.GetRequiredService<VeloxSqlDiscoveryResult>().CreatePostgresConfiguration());
         services.AddSingleton(sp => sp.GetRequiredService<VeloxSqlDiscoveryResult>().CreateClickHouseConfiguration());
+        services.AddSingleton<IVeloxSql>(sp => new VeloxSql(
+            sp.GetRequiredService<PgSqlConfiguration>(),
+            sp.GetRequiredService<ClickHouseSqlConfiguration>()));
 
         return services;
     }

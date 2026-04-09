@@ -7,7 +7,7 @@ public class DeleteTests : TestBase
     [Fact]
     public void Delete_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Delete(x => x.Id == 1)
             .ToDebugSql();
 

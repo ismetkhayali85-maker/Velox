@@ -8,7 +8,7 @@ public class InsertTests : TestBase
     public void Insert_ReturnsCorrectSql()
     {
         var entity = new TestEntity { Id = 1, Name = "test" };
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Insert(entity)
             .ToDebugSql();
 
@@ -19,7 +19,7 @@ public class InsertTests : TestBase
     public void BulkInsert_ReturnsCorrectSql()
     {
         var data = new[] { new TestEntity { Id = 1, Name = "A" }, new TestEntity { Id = 2, Name = "B" } };
-        var builder = DbQuery<TestEntity>.GetClickHouseBuilder();
+        var builder = VeloxRuntime.ClickHouse<TestEntity>();
         var insertBuilder = builder.BulkInsert(data);
 
         AssertQuery(insertBuilder,
@@ -32,7 +32,7 @@ public class InsertTests : TestBase
     public void Insert_Nullable_IncludesNull_ReturnsCorrectSql()
     {
         var entity = new NullableTestEntity { Id = 1, Name = null };
-        var sql = DbQuery<NullableTestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<NullableTestEntity>()
             .Insert(entity)
             .ToDebugSql();
 

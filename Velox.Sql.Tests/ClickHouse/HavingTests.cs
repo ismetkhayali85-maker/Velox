@@ -8,7 +8,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithCount_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .GroupBy(x => x.Id)
             .Having(h => h.Count(x => x.Id, Operators.GreaterThan, 1))
@@ -20,7 +20,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithSum_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .GroupBy(x => x.Id)
             .Having(h => h.Sum(x => x.Id, Operators.GreaterThan, 100))
@@ -32,7 +32,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithAvg_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .GroupBy(x => x.Id)
             .Having(h => h.Avg(x => x.Id, Operators.LessThan, 50))
@@ -44,7 +44,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithMinMax_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .GroupBy(x => x.Id)
             .Having(h => h.Min(x => x.Id, Operators.Equal, 10).And().Max(x => x.Id, Operators.NotEqual, 0))
@@ -56,7 +56,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithCountDistinct_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .GroupBy(x => x.Id)
             .Having(h => h.CountDistinct(x => x.Id, Operators.GreaterThan, 5))
@@ -69,7 +69,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithBooleanChecks_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .GroupBy(x => x.Id)
             .Having(h => h.IsTrue(x => x.Id).And().IsNull(x => x.Name))

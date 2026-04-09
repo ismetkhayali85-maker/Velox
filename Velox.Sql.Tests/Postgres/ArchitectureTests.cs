@@ -13,7 +13,7 @@ public class ArchitectureTests : TestBase
     public void Select_ThenUpdate_MaintainsCleanSlate()
     {
         // 1. Start with a Select builder and add some state
-        var factory = DbQuery<PostgresTestEntity>.GetPostgresBuilder();
+        var factory = VeloxRuntime.Postgres<PostgresTestEntity>();
         factory.Where(x => x.Id == 1);
         
         // 2. Switch to Update - it should return a NEW clean builder
@@ -32,7 +32,7 @@ public class ArchitectureTests : TestBase
     [Fact]
     public void WhereClause_FluentAction_Showcase()
     {
-        var builder = DbQuery<PostgresTestEntity>.GetPostgresBuilder();
+        var builder = VeloxRuntime.Postgres<PostgresTestEntity>();
         
         // Using the new WhereClause via Action
         builder.Where(where => 
@@ -49,7 +49,7 @@ public class ArchitectureTests : TestBase
     public void Select_WithGroupByAndHaving_Example()
     {
         // 1. Initial setup
-        var builder = DbQuery<PostgresTestEntity>.GetPostgresBuilder();
+        var builder = VeloxRuntime.Postgres<PostgresTestEntity>();
         
         // 2. Complex chain with Having
         builder.Select(x => x.Id)

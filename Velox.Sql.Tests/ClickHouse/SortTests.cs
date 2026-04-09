@@ -7,7 +7,7 @@ public class SortTests : TestBase
     [Fact]
     public void OrderBy_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .OrderBy(true, x => x.Id)
             .ToDebugSql();
 

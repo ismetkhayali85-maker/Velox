@@ -36,10 +36,10 @@ public class UserMapper : Mapper<User> {
 
 3.  **Config**: Register mappings — see [Mapper configuration](#mapper-configuration) below (manual list, discovery, or DI).
 
-4.  **Builder**: Build your queries anywhere.
+4.  **Builder**: Obtain `IVeloxSql` (see [Mapper configuration](#mapper-configuration)), then build queries.
 
 ```csharp
-var builder = DbQuery<User>.GetPostgresBuilder()
+var builder = sql.Postgres<User>()
     .Select(x => x.Id)
     .Where(x => x.Email.Contains("@gmail.com"))
     .Where(w => w.Between(x => x.Id, 1, 100));
@@ -64,48 +64,48 @@ var debugSql = builder.ToDebugSql();
 
 Mark mapper classes with `[VeloxSqlMapper(SqlEngine.PostgreSQL)]`, `[VeloxSqlMapper(SqlEngine.ClickHouse)]`, or combine flags for both engines. `IClassMapper` is unchanged — only metadata on the class.
 
-#### 1. Manual (static lists)
+#### 1. Manual (explicit configs)
 
-Explicit registration; no reflection. Fine for small apps and tests.
+Explicit registration; no reflection. Build `PgSqlConfiguration` / `ClickHouseSqlConfiguration`, then `VeloxSql`.
 
 ```csharp
 using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
 
-DbQuery.DefaultPostgresConfig = new PgSqlConfiguration(new List<IClassMapper> { new UserMapper() });
-DbQuery.DefaultClickHouseConfig = new ClickHouseSqlConfiguration(new List<IClassMapper> { new RawEventsMapper() });
+var pg = new PgSqlConfiguration(new List<IClassMapper> { new UserMapper() });
+var ch = new ClickHouseSqlConfiguration(new List<IClassMapper> { new RawEventsMapper() });
+IVeloxSql sql = new VeloxSql(pg, ch);
 ```
 
 #### 2. Discovery (attributes + scan)
 
-Scan assemblies for attributed mappers, then build configs or assign `DbQuery` defaults in one call.
+Scan assemblies for attributed mappers, then create `IVeloxSql` (or use the configs separately).
 
 ```csharp
+using Velox.Sql;
 using Velox.Sql.Registration;
 
 // var result = VeloxSqlMapperDiscovery.DiscoverTypes(typeof(UserMapper), typeof(RawEventsMapper));
 var result = VeloxSqlMapperDiscovery.Discover(typeof(UserMapper).Assembly);
 
-DbQuery.DefaultPostgresConfig = result.CreatePostgresConfiguration();
-DbQuery.DefaultClickHouseConfig = result.CreateClickHouseConfiguration();
-
-// Or both at once:
-// result.ApplyToDbQuery();
+IVeloxSql sql = result.CreateVeloxSql();
+// Or: new VeloxSql(result) — same as CreateVeloxSql()
 ```
 
 #### 3. Dependency Injection (separate NuGet package)
 
-Install **`Velox.Sql.DependencyInjection`**. It registers `PgSqlConfiguration`, `ClickHouseSqlConfiguration`, and `VeloxSqlDiscoveryResult` as singletons.
+Install **`Velox.Sql.DependencyInjection`**. It registers `PgSqlConfiguration`, `ClickHouseSqlConfiguration`, `VeloxSqlDiscoveryResult`, and `IVeloxSql` as singletons.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
+using Velox.Sql;
 using Velox.Sql.DependencyInjection;
 
 services.AddVeloxSql(typeof(UserMapper).Assembly);
 
-// var pg = serviceProvider.GetRequiredService<PgSqlConfiguration>();
-// DbQuery<T>.GetPostgresBuilder(pg)
+// var sql = serviceProvider.GetRequiredService<IVeloxSql>();
+// sql.Postgres<User>()
 ```
 
 Use `AddVeloxSql` with an optional callback if you need to adjust the assembly list after the fact.

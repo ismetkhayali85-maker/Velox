@@ -13,7 +13,7 @@ public class ArchitectureTests : TestBase
     public void Select_ThenInsert_MaintainsCleanSlate()
     {
         // 1. Start with a Select builder and add some state
-        var factory = DbQuery<TestEntity>.GetClickHouseBuilder();
+        var factory = VeloxRuntime.ClickHouse<TestEntity>();
         factory.Where(x => x.Id == 1);
         
         // 2. Switch to Insert - it should return a NEW clean builder
@@ -33,7 +33,7 @@ public class ArchitectureTests : TestBase
     [Fact]
     public void WhereClause_FluentAction_Showcase()
     {
-        var builder = DbQuery<TestEntity>.GetClickHouseBuilder();
+        var builder = VeloxRuntime.ClickHouse<TestEntity>();
         
         // Using the new WhereClause via Action
         builder.Where(where => 
@@ -50,7 +50,7 @@ public class ArchitectureTests : TestBase
     public void Select_WithGroupByAndHaving_Example()
     {
         // 1. Initial setup of a Select query with aggregation
-        var builder = DbQuery<TestEntity>.GetClickHouseBuilder();
+        var builder = VeloxRuntime.ClickHouse<TestEntity>();
         
         // 2. Add aggregation, grouping and Having using the new architecture
         builder.Select(x => x.Id)

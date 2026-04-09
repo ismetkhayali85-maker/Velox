@@ -6,7 +6,7 @@ public class JoinTests : TestBase
     [Fact]
     public void InnerJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .InnerJoin<ClickHouseJoinEntity, TestEntity>(
                 j => j.ParentId,
@@ -20,7 +20,7 @@ public class JoinTests : TestBase
     [Fact]
     public void LeftJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .LeftJoin<ClickHouseJoinEntity, TestEntity>(
                 j => j.ParentId,
@@ -33,7 +33,7 @@ public class JoinTests : TestBase
     [Fact]
     public void RightJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .RightJoin<ClickHouseJoinEntity, TestEntity>(
                 j => j.ParentId,
@@ -46,7 +46,7 @@ public class JoinTests : TestBase
     [Fact]
     public void FullJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .FullJoin<ClickHouseJoinEntity, TestEntity>(
                 j => j.ParentId,
@@ -59,7 +59,7 @@ public class JoinTests : TestBase
     [Fact]
     public void CrossJoin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select(x => x.Id)
             .CrossJoin<ClickHouseJoinEntity>()
             .ToDebugSql();

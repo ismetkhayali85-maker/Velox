@@ -8,7 +8,7 @@ public class UpdateTests : TestBase
     public void Update_Entity_ReturnsCorrectSql()
     {
         var entity = new PostgresTestEntity { Id = 1, Description = "Updated" };
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Update(entity, x => x.Id == 1)
             .ToDebugSql();
 
@@ -19,7 +19,7 @@ public class UpdateTests : TestBase
     public void Update_Nullable_IncludesNull_ReturnsCorrectSql()
     {
         var entity = new PostgresNullableTestEntity { Id = 1, Description = null };
-        var sql = DbQuery<PostgresNullableTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresNullableTestEntity>()
             .Update(entity, x => x.Id == 1)
             .ToDebugSql();
 

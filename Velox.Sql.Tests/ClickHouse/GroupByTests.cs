@@ -7,7 +7,7 @@ public class GroupByTests : TestBase
     [Fact]
     public void GroupBy_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Select()
             .GroupBy(x => x.Name)
             .ToDebugSql();

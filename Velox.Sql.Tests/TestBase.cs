@@ -132,24 +132,28 @@ public abstract class TestBase
 {
     static TestBase()
     {
-        // Global Postgres Config - Register all test entities
-        DbQuery.DefaultPostgresConfig = new PgSqlConfiguration(new List<IClassMapper> 
-        { 
+        var postgres = new PgSqlConfiguration(new List<IClassMapper>
+        {
             new PostgresTestEntityMapper(),
             new DateTimeEntityMapper(),
             new PostgresNullableTestEntityMapper(),
             new PostgresJoinEntityMapper()
         });
 
-        // Global ClickHouse Config
-        DbQuery.DefaultClickHouseConfig = new ClickHouseSqlConfiguration(new List<IClassMapper> 
-        { 
+        var clickHouse = new ClickHouseSqlConfiguration(new List<IClassMapper>
+        {
             new TestEntityMapper(),
             new DateTimeEntityMapper(),
             new NullableTestEntityMapper(),
             new ClickHouseJoinEntityMapper()
         });
+
+        VeloxRuntime = new VeloxSql(postgres, clickHouse);
     }
+
+    /// <summary>Shared <see cref="IVeloxSql"/> for tests (manual mapper lists).</summary>
+    /// <remarks>Named <c>VeloxRuntime</c> so tests can still qualify types as <c>Velox.Sql.*</c> without shadowing.</remarks>
+    protected static IVeloxSql VeloxRuntime { get; private set; } = null!;
 
     protected void AssertQuery(ISqlBuilder builder, string debug = null, string sql = null, object expectedParams = null)
     {

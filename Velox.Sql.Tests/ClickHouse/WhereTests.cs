@@ -7,7 +7,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_Simple_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(x => x.Id == 1)
             .ToDebugSql();
 
@@ -17,7 +17,7 @@ public class WhereTests : TestBase
     [Fact]
     public void WhereAnd_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(x => x.Id == 1 && x.Name == "test")
             .ToDebugSql();
 
@@ -27,7 +27,7 @@ public class WhereTests : TestBase
     [Fact]
     public void WhereOr_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(x => x.Id == 1 || x.Name == "test")
             .ToDebugSql();
 
@@ -37,7 +37,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_EscapeSingleQuote_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(x => x.Name == "O'Brien")
             .ToDebugSql();
 
@@ -47,7 +47,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_EscapeBackslash_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(x => x.Name == @"C:\Users\Admin")
             .ToDebugSql();
 
@@ -57,7 +57,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_In_EscapeSpecialChars_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(w => w.In(x => x.Name, new[] { "A'B", @"C\D" }))
             .ToDebugSql();
 
@@ -67,7 +67,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_Security_InjectionPrevention_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(x => x.Name == "'; DROP TABLE test_table; --")
             .ToDebugSql();
 
@@ -77,7 +77,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_WithBetween_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(w => w.Between(x => x.Id, 1, 100))
             .ToDebugSql();
 
@@ -87,7 +87,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_WithILike_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(w => w.ILike(x => x.Name, "test%"))
             .ToDebugSql();
 
@@ -97,7 +97,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_WithLike_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(w => w.Like(x => x.Name, "test%"))
             .ToDebugSql();
 
@@ -107,11 +107,11 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_WithAnyAllSome_ReturnsCorrectSql()
     {
-        var subquery = DbQuery<TestEntity>.GetClickHouseBuilder().Select(x => x.Id);
+        var subquery = VeloxRuntime.ClickHouse<TestEntity>().Select(x => x.Id);
 
-        var sqlAny = DbQuery<TestEntity>.GetClickHouseBuilder().Where(w => w.Any(x => x.Id, Velox.Sql.Core.Impl.Operators.Equal, subquery)).ToDebugSql();
-        var sqlAll = DbQuery<TestEntity>.GetClickHouseBuilder().Where(w => w.All(x => x.Id, Velox.Sql.Core.Impl.Operators.GreaterThan, subquery)).ToDebugSql();
-        var sqlSome = DbQuery<TestEntity>.GetClickHouseBuilder().Where(w => w.Some(x => x.Id, Velox.Sql.Core.Impl.Operators.NotEqual, subquery)).ToDebugSql();
+        var sqlAny = VeloxRuntime.ClickHouse<TestEntity>().Where(w => w.Any(x => x.Id, Velox.Sql.Core.Impl.Operators.Equal, subquery)).ToDebugSql();
+        var sqlAll = VeloxRuntime.ClickHouse<TestEntity>().Where(w => w.All(x => x.Id, Velox.Sql.Core.Impl.Operators.GreaterThan, subquery)).ToDebugSql();
+        var sqlSome = VeloxRuntime.ClickHouse<TestEntity>().Where(w => w.Some(x => x.Id, Velox.Sql.Core.Impl.Operators.NotEqual, subquery)).ToDebugSql();
 
         Assert.Contains("WHERE \"test_table\".\"id\" = ANY (SELECT \"test_table\".\"id\"", sqlAny);
         Assert.Contains("WHERE \"test_table\".\"id\" > ALL (SELECT \"test_table\".\"id\"", sqlAll);
@@ -121,7 +121,7 @@ public class WhereTests : TestBase
     [Fact]
     public void Where_Security_ClassicInjection_ReturnsEscapedSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Where(x => x.Name == "1' OR '1'='1")
             .ToDebugSql();
 

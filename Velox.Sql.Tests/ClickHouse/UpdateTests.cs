@@ -8,7 +8,7 @@ public class UpdateTests : TestBase
     public void Update_ReturnsCorrectSql()
     {
         var entity = new TestEntity { Id = 1, Name = "updated" };
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Update(entity, x => x.Id == 1)
             .ToDebugSql();
 
@@ -19,7 +19,7 @@ public class UpdateTests : TestBase
     public void Update_Nullable_IncludesNull_ReturnsCorrectSql()
     {
         var entity = new NullableTestEntity { Id = 1, Name = null };
-        var sql = DbQuery<NullableTestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<NullableTestEntity>()
             .Update(entity, x => x.Id == 1)
             .ToDebugSql();
 

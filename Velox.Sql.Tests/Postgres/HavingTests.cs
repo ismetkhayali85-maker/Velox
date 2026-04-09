@@ -9,7 +9,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithCount_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .From<PostgresTestEntity>()
             .GroupBy(x => x.Id)
@@ -22,7 +22,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithSum_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .From<PostgresTestEntity>()
             .GroupBy(x => x.Id)
@@ -35,7 +35,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithAvg_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .From<PostgresTestEntity>()
             .GroupBy(x => x.Id)
@@ -48,7 +48,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithMin_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .From<PostgresTestEntity>()
             .GroupBy(x => x.Id)
@@ -61,7 +61,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithMax_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .From<PostgresTestEntity>()
             .GroupBy(x => x.Id)
@@ -74,7 +74,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithCountDistinct_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .GroupBy(x => x.Id)
             .Having(h => h.CountDistinct(x => x.Id, Operators.GreaterThan, 5))
@@ -86,7 +86,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithBooleanChecks_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .GroupBy(x => x.Id)
             .Having(h => h.IsTrue(x => x.Id).And().IsNull(x => x.Description))
@@ -98,7 +98,7 @@ public class HavingTests : TestBase
     [Fact]
     public void Having_WithMultipleConditions_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Id)
             .From<PostgresTestEntity>()
             .GroupBy(x => x.Id)

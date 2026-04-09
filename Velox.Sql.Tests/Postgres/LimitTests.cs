@@ -7,7 +7,7 @@ public class LimitTests : TestBase
     [Fact]
     public void LimitOffset_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Limit(10)
             .Offset(5)
             .ToDebugSql();

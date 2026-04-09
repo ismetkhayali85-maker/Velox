@@ -5,7 +5,7 @@ public class ParameterizationTests : TestBase
     [Fact]
     public void Select_WithParameters_ReturnsCorrectSqlAndDictionary()
     {
-        var builder = DbQuery<PostgresTestEntity>.GetPostgresBuilder();
+        var builder = VeloxRuntime.Postgres<PostgresTestEntity>();
         builder.Select()
                .Where(x => x.Id == 10 && x.Description == "Test")
                .OrderBy<PostgresTestEntity>(true, x => x.Id);
@@ -20,7 +20,7 @@ public class ParameterizationTests : TestBase
     public void Where_In_WithParameters_ReturnsCorrectSqlAndDictionary()
     {
         var ids = new object[] { 1, 2, 3 };
-        var builder = DbQuery<PostgresTestEntity>.GetPostgresBuilder();
+        var builder = VeloxRuntime.Postgres<PostgresTestEntity>();
         builder.Select().Where(w => w.In(x => x.Id, ids));
 
         AssertQuery(builder,
@@ -33,7 +33,7 @@ public class ParameterizationTests : TestBase
     public void Update_WithParameters_ReturnsCorrectSqlAndDictionary()
     {
         var entity = new PostgresTestEntity { Id = 1, Description = "Updated" };
-        var builder = DbQuery<PostgresTestEntity>.GetPostgresBuilder();
+        var builder = VeloxRuntime.Postgres<PostgresTestEntity>();
         var updateBuilder = builder.Update(entity, x => x.Id == 1);
 
         AssertQuery(updateBuilder,
@@ -45,7 +45,7 @@ public class ParameterizationTests : TestBase
     [Fact]
     public void Contains_WithParameters_ReturnsCorrectSqlAndDictionary()
     {
-        var builder = DbQuery<PostgresTestEntity>.GetPostgresBuilder();
+        var builder = VeloxRuntime.Postgres<PostgresTestEntity>();
         builder.Select().Where(x => x.Description.Contains("abc"));
 
         AssertQuery(builder,

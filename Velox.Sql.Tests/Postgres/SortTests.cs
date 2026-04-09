@@ -7,7 +7,7 @@ public class SortTests : TestBase
     [Fact]
     public void OrderBy_Asc_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .OrderBy(true, x => x.Id)
             .ToDebugSql();
 
@@ -17,7 +17,7 @@ public class SortTests : TestBase
     [Fact]
     public void OrderBy_Desc_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .OrderBy(false, x => x.Id)
             .ToDebugSql();
 

@@ -7,7 +7,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_All_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select()
             .ToDebugSql();
 
@@ -17,7 +17,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Specific_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => x.Description)
             .ToDebugSql();
 
@@ -27,7 +27,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Multiple_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(x => new { x.Id, x.Description })
             .ToDebugSql();
 
@@ -37,7 +37,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Avg_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Avg(x => x.Id, "AverageId")
             .ToDebugSql();
 
@@ -47,7 +47,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Sum_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Sum(x => x.Id, "TotalId")
             .ToDebugSql();
 
@@ -57,7 +57,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Min_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Min(x => x.Id, "MinId")
             .ToDebugSql();
 
@@ -67,7 +67,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Max_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Max(x => x.Id, "MaxId")
             .ToDebugSql();
 
@@ -77,7 +77,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Count_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Count(x => x.Id, "IdCount")
             .ToDebugSql();
 
@@ -87,7 +87,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_CountAll_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Count("TotalCount")
             .ToDebugSql();
 
@@ -97,7 +97,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_CountDistinct_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .CountDistinct(x => x.Description, "UniqueDesc")
             .ToDebugSql();
 
@@ -107,7 +107,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Now_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(s => s.Now("CurrentTimestamp"))
             .ToDebugSql();
 
@@ -117,7 +117,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_StringFunctions_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(s => s
                 .Lcase(new Core.PostgreSql.Column("pg_table", "description", "Lowered"))
                 .Ucase(new Core.PostgreSql.Column("pg_table", "description", "Uppered"))
@@ -130,7 +130,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Round_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(s => s.Round(new Core.PostgreSql.Column("pg_table", "id"), 2))
             .ToDebugSql();
 
@@ -140,7 +140,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_Mid_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(s => s.Mid(new Core.PostgreSql.Column("pg_table", "description"), 1, 5))
             .ToDebugSql();
 
@@ -150,7 +150,7 @@ public class SelectTests : TestBase
     [Fact]
     public void Select_GenericFunction_ReturnsCorrectSql()
     {
-        var sql = DbQuery<PostgresTestEntity>.GetPostgresBuilder()
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
             .Select(s => s.Function(new Core.PostgreSql.Column("pg_table", "id"), "MY_FUNC", "Alias"))
             .ToDebugSql();
 

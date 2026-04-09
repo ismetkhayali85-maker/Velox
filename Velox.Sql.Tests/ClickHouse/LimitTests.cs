@@ -7,7 +7,7 @@ public class LimitTests : TestBase
     [Fact]
     public void LimitOffset_ReturnsCorrectSql()
     {
-        var sql = DbQuery<TestEntity>.GetClickHouseBuilder()
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
             .Limit(10)
             .Offset(5)
             .ToDebugSql();
