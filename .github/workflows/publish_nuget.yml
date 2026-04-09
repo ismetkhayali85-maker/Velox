@@ -30,6 +30,7 @@ jobs:
         run: |
           dotnet pack Velox.Sql.Core/Velox.Sql.Core.csproj --configuration Release --output nupkgs --no-build
           dotnet pack Velox.Sql/Velox.Sql.csproj --configuration Release --output nupkgs --no-build
+          dotnet pack Velox.Sql.DependencyInjection/Velox.Sql.DependencyInjection.csproj --configuration Release --output nupkgs --no-build
 
       - name: Push to NuGet.org
         run: dotnet nuget push "nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

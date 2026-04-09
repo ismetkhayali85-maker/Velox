@@ -1,4 +1,4 @@
 using BenchmarkDotNet.Running;
-using Velox.Sql.Benchmarks;
+using Velox.Sql.Test.Benchmarks;
 
 BenchmarkRunner.Run<SqlBuilderBenchmarks>();

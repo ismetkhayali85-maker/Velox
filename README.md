@@ -9,7 +9,7 @@ The main goal is to generate clean, parameterized SQL without being tied to any 
 *   **Pure SQL Generation**: Built to produce SQL strings and parameters, leaving the execution to you.
 *   **Type Safe**: Uses C# Expressions to map your models to table columns safely.
 *   **Optimized Dialects**: Specialized support for advanced PostgreSQL and ClickHouse functions.
-*   **Zero Dependencies**: Minimal footprint, maximum performance.
+*   **Core stays lean**: The main `Velox.Sql` package has no DI dependency; optional integration ships as a separate NuGet package.
 
 ---
 
@@ -34,11 +34,7 @@ public class UserMapper : Mapper<User> {
 }
 ```
 
-3.  **Config**: Register mappings (PostgreSql or ClickHouse).
-
-```csharp
-DbQuery.DefaultPostgresConfig = new PgSqlConfiguration(new List<IClassMapper> { new UserMapper() });
-```
+3.  **Config**: Register mappings — see [Mapper configuration](#mapper-configuration) below (manual list, discovery, or DI).
 
 4.  **Builder**: Build your queries anywhere.
 
@@ -64,10 +60,84 @@ var debugSql = builder.ToDebugSql();
 
 ---
 
+### Mapper configuration
+
+Mark mapper classes with `[VeloxSqlMapper(SqlEngine.PostgreSQL)]`, `[VeloxSqlMapper(SqlEngine.ClickHouse)]`, or combine flags for both engines. `IClassMapper` is unchanged — only metadata on the class.
+
+#### 1. Manual (static lists)
+
+Explicit registration; no reflection. Fine for small apps and tests.
+
+```csharp
+using Velox.Sql;
+using Velox.Sql.Impl;
+using Velox.Sql.Impl.Map;
+
+DbQuery.DefaultPostgresConfig = new PgSqlConfiguration(new List<IClassMapper> { new UserMapper() });
+DbQuery.DefaultClickHouseConfig = new ClickHouseSqlConfiguration(new List<IClassMapper> { new RawEventsMapper() });
+```
+
+#### 2. Discovery (attributes + scan)
+
+Scan assemblies for attributed mappers, then build configs or assign `DbQuery` defaults in one call.
+
+```csharp
+using Velox.Sql.Registration;
+
+// var result = VeloxSqlMapperDiscovery.DiscoverTypes(typeof(UserMapper), typeof(RawEventsMapper));
+var result = VeloxSqlMapperDiscovery.Discover(typeof(UserMapper).Assembly);
+
+DbQuery.DefaultPostgresConfig = result.CreatePostgresConfiguration();
+DbQuery.DefaultClickHouseConfig = result.CreateClickHouseConfiguration();
+
+// Or both at once:
+// result.ApplyToDbQuery();
+```
+
+#### 3. Dependency Injection (separate NuGet package)
+
+Install **`Velox.Sql.DependencyInjection`**. It registers `PgSqlConfiguration`, `ClickHouseSqlConfiguration`, and `VeloxSqlDiscoveryResult` as singletons.
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Velox.Sql.DependencyInjection;
+
+services.AddVeloxSql(typeof(UserMapper).Assembly);
+
+// var pg = serviceProvider.GetRequiredService<PgSqlConfiguration>();
+// DbQuery<T>.GetPostgresBuilder(pg)
+```
+
+Use `AddVeloxSql` with an optional callback if you need to adjust the assembly list after the fact.
+
+---
+
+### NuGet packages
+
+| Package | Purpose |
+|--------|---------|
+| `Velox.Sql.Core` | Shared primitives |
+| `Velox.Sql` | SQL builder, mappers, discovery |
+| `Velox.Sql.DependencyInjection` | `AddVeloxSql` for `Microsoft.Extensions.DependencyInjection` |
+
+---
+
+### CI and publishing
+
+NuGet packages are **not** built on every push to `main`. The workflow [`.github/workflows/publish_nuget.yml`](.github/workflows/publish_nuget.yml) runs when:
+
+* you push a **version tag** matching `v*` (for example `v1.0.1`), or  
+* you run the workflow **manually** (`workflow_dispatch`).
+
+It restores, builds in Release, packs the projects above, and pushes to NuGet.org using the **`NUGET_API_KEY`** repository secret. Configure that secret in the GitHub repo settings before publishing.
+
+---
+
 ### Examples & Documentation
 
 *   [PostgreSQL Examples](Velox.Sql.Tests/Postgres/)
 *   [ClickHouse Examples](Velox.Sql.Tests/ClickHouse/)
+*   [Mapper discovery & DI examples](Velox.Sql.Tests/Registration/) — configuration styles demonstrated in tests
 
 ### License
 

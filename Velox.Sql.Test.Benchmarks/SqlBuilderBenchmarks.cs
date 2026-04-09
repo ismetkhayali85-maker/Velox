@@ -4,7 +4,7 @@ using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
 using System.Collections.Generic;
 
-namespace Velox.Sql.Benchmarks;
+namespace Velox.Sql.Test.Benchmarks;
 
 [MemoryDiagnoser]
 public class SqlBuilderBenchmarks
