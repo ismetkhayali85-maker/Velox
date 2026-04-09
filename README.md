@@ -122,17 +122,6 @@ Use `AddVeloxSql` with an optional callback if you need to adjust the assembly l
 
 ---
 
-### CI and publishing
-
-NuGet packages are **not** built on every push to `main`. The workflow [`.github/workflows/publish_nuget.yml`](.github/workflows/publish_nuget.yml) runs when:
-
-* you push a **version tag** matching `v*` (for example `v1.0.1`), or  
-* you run the workflow **manually** (`workflow_dispatch`).
-
-It restores, builds in Release, packs the projects above, and pushes to NuGet.org using the **`NUGET_API_KEY`** repository secret. Configure that secret in the GitHub repo settings before publishing.
-
----
-
 ### Examples & Documentation
 
 *   [PostgreSQL Examples](Velox.Sql.Tests/Postgres/)
