@@ -37,6 +37,8 @@ public abstract class PostgresBuilderBase<TEntity> : SqlBuilderCore<TEntity>
         if (value == null || value.ToString() == "null")
             return new Value();
 
+        ThrowIfUnsignedClrTypeNotSupportedForPostgres(value);
+
         if (value is DateTime dt)
             return new Value(dt);
 
@@ -58,6 +60,24 @@ public abstract class PostgresBuilderBase<TEntity> : SqlBuilderCore<TEntity>
         if (value is double db) return new Value(db.ToString(CultureInfo.InvariantCulture), false, true);
 
         return new Value(value.ToString(), false, false);
+    }
+
+    /// <summary>
+    /// PostgreSQL has no matching unsigned integer types; Velox does not coerce CLR unsigned types to signed ones.
+    /// </summary>
+    private static void ThrowIfUnsignedClrTypeNotSupportedForPostgres(object value)
+    {
+        switch (value)
+        {
+            case ushort:
+            case uint:
+            case ulong:
+            case UIntPtr: // nuint (native-sized unsigned)
+            case UInt128:
+                throw new NotSupportedException(
+                    $"The CLR type '{value.GetType().Name}' is not supported for PostgreSQL in Velox. " +
+                    "PostgreSQL does not provide unsigned integer types (including nuint/UIntPtr and UInt128); use a signed type that fits your column (short, int, long, or numeric) or adjust your model.");
+        }
     }
 
     internal IValue ConvertExpressionValueToIValue(ExpressionInfoEx item)

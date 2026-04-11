@@ -42,6 +42,33 @@ public class PostgresJoinEntity
     public int ParentId { get; set; }
 }
 
+public class PostgresUnsignedProbeEntity
+{
+    public ushort UShortProp { get; set; }
+    public uint UIntProp { get; set; }
+    public ulong ULongProp { get; set; }
+}
+
+public class PostgresUIntOnlyEntity
+{
+    public uint Value { get; set; }
+}
+
+public class PostgresUShortOnlyEntity
+{
+    public ushort Value { get; set; }
+}
+
+public class PostgresNUIntOnlyEntity
+{
+    public nuint Value { get; set; }
+}
+
+public class PostgresUInt128OnlyEntity
+{
+    public UInt128 Value { get; set; }
+}
+
 public class ClickHouseJoinEntity
 {
     public int Id { get; set; }
@@ -116,6 +143,58 @@ public class PostgresJoinEntityMapper : Mapper<PostgresJoinEntity>
     }
 }
 
+public class PostgresUnsignedProbeEntityMapper : Mapper<PostgresUnsignedProbeEntity>
+{
+    public PostgresUnsignedProbeEntityMapper()
+    {
+        Table("pg_unsigned_probe");
+        Map(x => x.UShortProp).Column("ush");
+        Map(x => x.UIntProp).Column("ui");
+        Map(x => x.ULongProp).Column("ul");
+        Build();
+    }
+}
+
+public class PostgresUIntOnlyEntityMapper : Mapper<PostgresUIntOnlyEntity>
+{
+    public PostgresUIntOnlyEntityMapper()
+    {
+        Table("pg_uint_only");
+        Map(x => x.Value).Column("v");
+        Build();
+    }
+}
+
+public class PostgresUShortOnlyEntityMapper : Mapper<PostgresUShortOnlyEntity>
+{
+    public PostgresUShortOnlyEntityMapper()
+    {
+        Table("pg_ushort_only");
+        Map(x => x.Value).Column("v");
+        Build();
+    }
+}
+
+public class PostgresNUIntOnlyEntityMapper : Mapper<PostgresNUIntOnlyEntity>
+{
+    public PostgresNUIntOnlyEntityMapper()
+    {
+        Table("pg_nuint_only");
+        Map(x => x.Value).Column("v");
+        Build();
+    }
+}
+
+public class PostgresUInt128OnlyEntityMapper : Mapper<PostgresUInt128OnlyEntity>
+{
+    public PostgresUInt128OnlyEntityMapper()
+    {
+        Table("pg_uint128_only");
+        Map(x => x.Value).Column("v");
+        Build();
+    }
+}
+
 public class ClickHouseJoinEntityMapper : Mapper<ClickHouseJoinEntity>
 {
     public ClickHouseJoinEntityMapper()
@@ -137,7 +216,12 @@ public abstract class TestBase
             new PostgresTestEntityMapper(),
             new DateTimeEntityMapper(),
             new PostgresNullableTestEntityMapper(),
-            new PostgresJoinEntityMapper()
+            new PostgresJoinEntityMapper(),
+            new PostgresUnsignedProbeEntityMapper(),
+            new PostgresUIntOnlyEntityMapper(),
+            new PostgresUShortOnlyEntityMapper(),
+            new PostgresNUIntOnlyEntityMapper(),
+            new PostgresUInt128OnlyEntityMapper()
         });
 
         var clickHouse = new ClickHouseSqlConfiguration(new List<IClassMapper>
