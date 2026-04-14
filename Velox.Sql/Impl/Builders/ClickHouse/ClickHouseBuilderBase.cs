@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Globalization;
 using Velox.Sql.Core.ClickHouseSql;
@@ -19,6 +20,14 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
     {
         _config = config;
         _builder = builder;
+    }
+
+    /// <summary>
+    /// Shares the parent's parameter dictionary so nested CTE subqueries participate in one numbered parameter list.
+    /// </summary>
+    internal void BindParametersFrom(Dictionary<string, object> parameters)
+    {
+        _currentParameters = parameters;
     }
 
     public override void Dispose()

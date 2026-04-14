@@ -44,6 +44,11 @@ public interface ISqlSelectBuilder<TBuilder, TEntity> :
 
     TBuilder From<T>(string alias = null);
 
+    /// <summary>
+    /// Use a common table expression name (or alias) as the FROM source, e.g. after <c>With</c>.
+    /// </summary>
+    TBuilder FromCte(string cteName, string alias = null);
+
     TBuilder InnerJoin<TNewTable, TOldTable>(Expression<Func<TNewTable, object>> firstSelector,
         Expression<Func<TOldTable, object>> secondSelector,
         Expression<Func<TNewTable, TOldTable, object>> resultSelector = null);

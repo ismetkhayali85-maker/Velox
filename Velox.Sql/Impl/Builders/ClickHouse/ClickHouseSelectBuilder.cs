@@ -11,6 +11,7 @@ using Velox.Sql.Core.ClickHouseSql.OrderBy;
 using Velox.Sql.Core.Impl;
 using Velox.Sql.Core.Interfaces;
 using Velox.Sql.Expressions;
+using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
 using Velox.Sql.Impl.Clauses;
 using Velox.Sql.Interfaces;
@@ -25,6 +26,7 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
     protected readonly List<Action<ClickHouseGroupByItem>> _groupByPredicates = new();
     protected readonly List<Action<ClickHouseOrder>> _orderPredicates = new();
     protected readonly List<(string op, string sql)> _setOperations = new();
+    protected readonly List<(bool Recursive, string Alias, Func<ClickHouseSqlConfiguration, Dictionary<string, object>, string> Build)> _commonTableExpressions = new();
     protected Action<IHaving> _havingPredicates;
     
     protected ITable _fromTable;
@@ -111,6 +113,92 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
     public IClickHouseSelectBuilder<TEntity> Where(Expression<Func<TEntity, bool>> whereExpr)
     {
         return Where<TEntity>(whereExpr);
+    }
+
+    private string BuildBoolExpressionSql<T>(Expression<Func<T, bool>> predicate)
+    {
+        IClassMapper map = _config.GetMap(typeof(T));
+        ExpressionResultEx exprSettings = ExpressionParser.FindExpressionEx(predicate);
+        var group = new ClickHouseWherePredicate();
+        ParseWhereExpression(group, exprSettings.Settings, map);
+        var sql = group.ToSql();
+        if (sql.Length >= 2 && sql[0] == '(' && sql[^1] == ')')
+            return sql.Substring(1, sql.Length - 2);
+        return sql;
+    }
+
+    private enum ConditionalIfAggKind { Sum, Avg, Min, Max }
+
+    private static void ApplyIfAggOnColumn(IClickHouseSelect s, ConditionalIfAggKind kind, IColumn col, string condSql,
+        string outAlias)
+    {
+        switch (kind)
+        {
+            case ConditionalIfAggKind.Sum:
+                s.SumIf(col, condSql, outAlias);
+                break;
+            case ConditionalIfAggKind.Avg:
+                s.AvgIf(col, condSql, outAlias);
+                break;
+            case ConditionalIfAggKind.Min:
+                s.MinIf(col, condSql, outAlias);
+                break;
+            case ConditionalIfAggKind.Max:
+                s.MaxIf(col, condSql, outAlias);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(kind));
+        }
+    }
+
+    private static void ApplyIfAggOnValueSql(IClickHouseSelect s, ConditionalIfAggKind kind, string valueSql, string condSql,
+        string alias)
+    {
+        switch (kind)
+        {
+            case ConditionalIfAggKind.Sum:
+                s.SumIf(valueSql, condSql, alias);
+                break;
+            case ConditionalIfAggKind.Avg:
+                s.AvgIf(valueSql, condSql, alias);
+                break;
+            case ConditionalIfAggKind.Min:
+                s.MinIf(valueSql, condSql, alias);
+                break;
+            case ConditionalIfAggKind.Max:
+                s.MaxIf(valueSql, condSql, alias);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(kind));
+        }
+    }
+
+    private IClickHouseSelectBuilder<TEntity> AddIfFromColumn(
+        ConditionalIfAggKind kind,
+        Expression<Func<TEntity, object>> columnExpr,
+        string conditionSql,
+        string alias)
+    {
+        IClassMapper map = _config.GetMap(typeof(TEntity));
+        MemberUnaryResult[] cols = ExpressionParser.FindMemberUnaryExpression(columnExpr);
+        foreach (MemberUnaryResult exprSetting in cols.AsSpan())
+        {
+            var col = new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), "");
+            string outAlias = string.IsNullOrEmpty(alias) ? exprSetting.Value : alias;
+            ConditionalIfAggKind k = kind;
+            _selectPredicates.Add(s => ApplyIfAggOnColumn(s, k, col, conditionSql, outAlias));
+        }
+
+        return this;
+    }
+
+    private IClickHouseSelectBuilder<TEntity> AddIfFromValueSql(ConditionalIfAggKind kind, string valueExpressionSql,
+        string conditionSql, string alias)
+    {
+        if (valueExpressionSql == null) throw new ArgumentNullException(nameof(valueExpressionSql));
+        ConditionalIfAggKind k = kind;
+        _selectPredicates.Add(s => ApplyIfAggOnValueSql(s, k, valueExpressionSql, conditionSql, alias));
+        return this;
     }
 
     public IClickHouseSelectBuilder<TEntity> Where(Action<IWhere<TEntity>> action)
@@ -295,14 +383,14 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
             foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
                 if (isAsc)
                     _orderPredicates.Add(order =>
-                        order.Asc(new Column(map.TableName, sortByAlias
-                            ? exprSetting.Value
-                            : map.GetUserDefinedName(exprSetting.Value), "")));
+                        order.Asc(sortByAlias
+                            ? new Column(exprSetting.Value)
+                            : new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), "")));
                 else
                     _orderPredicates.Add(order =>
-                        order.Desc(new Column(map.TableName, sortByAlias
-                            ? exprSetting.Value
-                            : map.GetUserDefinedName(exprSetting.Value), "")));
+                        order.Desc(sortByAlias
+                            ? new Column(exprSetting.Value)
+                            : new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), "")));
             return this;
         }
 
@@ -397,6 +485,141 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
         return this;
     }
 
+    public IClickHouseSelectBuilder<TEntity> SumCount(Expression<Func<TEntity, object>> expr, string alias = null)
+    {
+        IClassMapper map = _config.GetMap(typeof(TEntity));
+        MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(expr);
+        foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
+            _selectPredicates.Add(x =>
+                x.SumCount(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), alias)));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> CountIf<T>(Expression<Func<T, bool>> condition, string alias = null)
+    {
+        string condSql = BuildBoolExpressionSql(condition);
+        _selectPredicates.Add(s => s.CountIf(condSql, alias));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> CountIf(Expression<Func<TEntity, bool>> condition, string alias = null) =>
+        CountIf<TEntity>(condition, alias);
+
+    public IClickHouseSelectBuilder<TEntity> CountIf(string conditionSql, string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        _selectPredicates.Add(s => s.CountIf(conditionSql, alias));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> SumIf(
+        Expression<Func<TEntity, object>> columnExpr,
+        Expression<Func<TEntity, bool>> condition,
+        string alias = null) =>
+        AddIfFromColumn(ConditionalIfAggKind.Sum, columnExpr, BuildBoolExpressionSql(condition), alias);
+
+    public IClickHouseSelectBuilder<TEntity> SumIf(
+        Expression<Func<TEntity, object>> columnExpr,
+        string conditionSql,
+        string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        return AddIfFromColumn(ConditionalIfAggKind.Sum, columnExpr, conditionSql, alias);
+    }
+
+    public IClickHouseSelectBuilder<TEntity> SumIf(
+        string valueExpressionSql,
+        Expression<Func<TEntity, bool>> condition,
+        string alias = null) =>
+        AddIfFromValueSql(ConditionalIfAggKind.Sum, valueExpressionSql, BuildBoolExpressionSql(condition), alias);
+
+    public IClickHouseSelectBuilder<TEntity> SumIf(string valueExpressionSql, string conditionSql, string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        return AddIfFromValueSql(ConditionalIfAggKind.Sum, valueExpressionSql, conditionSql, alias);
+    }
+
+    public IClickHouseSelectBuilder<TEntity> AvgIf(
+        Expression<Func<TEntity, object>> columnExpr,
+        Expression<Func<TEntity, bool>> condition,
+        string alias = null) =>
+        AddIfFromColumn(ConditionalIfAggKind.Avg, columnExpr, BuildBoolExpressionSql(condition), alias);
+
+    public IClickHouseSelectBuilder<TEntity> AvgIf(
+        Expression<Func<TEntity, object>> columnExpr,
+        string conditionSql,
+        string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        return AddIfFromColumn(ConditionalIfAggKind.Avg, columnExpr, conditionSql, alias);
+    }
+
+    public IClickHouseSelectBuilder<TEntity> AvgIf(
+        string valueExpressionSql,
+        Expression<Func<TEntity, bool>> condition,
+        string alias = null) =>
+        AddIfFromValueSql(ConditionalIfAggKind.Avg, valueExpressionSql, BuildBoolExpressionSql(condition), alias);
+
+    public IClickHouseSelectBuilder<TEntity> AvgIf(string valueExpressionSql, string conditionSql, string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        return AddIfFromValueSql(ConditionalIfAggKind.Avg, valueExpressionSql, conditionSql, alias);
+    }
+
+    public IClickHouseSelectBuilder<TEntity> MinIf(
+        Expression<Func<TEntity, object>> columnExpr,
+        Expression<Func<TEntity, bool>> condition,
+        string alias = null) =>
+        AddIfFromColumn(ConditionalIfAggKind.Min, columnExpr, BuildBoolExpressionSql(condition), alias);
+
+    public IClickHouseSelectBuilder<TEntity> MinIf(
+        Expression<Func<TEntity, object>> columnExpr,
+        string conditionSql,
+        string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        return AddIfFromColumn(ConditionalIfAggKind.Min, columnExpr, conditionSql, alias);
+    }
+
+    public IClickHouseSelectBuilder<TEntity> MinIf(
+        string valueExpressionSql,
+        Expression<Func<TEntity, bool>> condition,
+        string alias = null) =>
+        AddIfFromValueSql(ConditionalIfAggKind.Min, valueExpressionSql, BuildBoolExpressionSql(condition), alias);
+
+    public IClickHouseSelectBuilder<TEntity> MinIf(string valueExpressionSql, string conditionSql, string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        return AddIfFromValueSql(ConditionalIfAggKind.Min, valueExpressionSql, conditionSql, alias);
+    }
+
+    public IClickHouseSelectBuilder<TEntity> MaxIf(
+        Expression<Func<TEntity, object>> columnExpr,
+        Expression<Func<TEntity, bool>> condition,
+        string alias = null) =>
+        AddIfFromColumn(ConditionalIfAggKind.Max, columnExpr, BuildBoolExpressionSql(condition), alias);
+
+    public IClickHouseSelectBuilder<TEntity> MaxIf(
+        Expression<Func<TEntity, object>> columnExpr,
+        string conditionSql,
+        string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        return AddIfFromColumn(ConditionalIfAggKind.Max, columnExpr, conditionSql, alias);
+    }
+
+    public IClickHouseSelectBuilder<TEntity> MaxIf(
+        string valueExpressionSql,
+        Expression<Func<TEntity, bool>> condition,
+        string alias = null) =>
+        AddIfFromValueSql(ConditionalIfAggKind.Max, valueExpressionSql, BuildBoolExpressionSql(condition), alias);
+
+    public IClickHouseSelectBuilder<TEntity> MaxIf(string valueExpressionSql, string conditionSql, string alias = null)
+    {
+        if (conditionSql == null) throw new ArgumentNullException(nameof(conditionSql));
+        return AddIfFromValueSql(ConditionalIfAggKind.Max, valueExpressionSql, conditionSql, alias);
+    }
+
     public IClickHouseSelectBuilder<TEntity> Avg(Expression<Func<TEntity, object>> expr, string alias = null)
     {
         IClassMapper map = _config.GetMap(typeof(TEntity));
@@ -424,12 +647,78 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
         return this;
     }
 
+    public IClickHouseSelectBuilder<TEntity> SumOver<TSum>(Expression<Func<TSum, object>> sumExpr,
+        Action<ClickHouseWindowOverClause> window, string alias = null) =>
+        FunctionOver(sumExpr, "sum", window, alias);
+
+    public IClickHouseSelectBuilder<TEntity> AvgOver<TAvg>(Expression<Func<TAvg, object>> expr,
+        Action<ClickHouseWindowOverClause> window, string alias = null) =>
+        FunctionOver(expr, "avg", window, alias);
+
+    public IClickHouseSelectBuilder<TEntity> MinOver<TMin>(Expression<Func<TMin, object>> expr,
+        Action<ClickHouseWindowOverClause> window, string alias = null) =>
+        FunctionOver(expr, "min", window, alias);
+
+    public IClickHouseSelectBuilder<TEntity> MaxOver<TMax>(Expression<Func<TMax, object>> expr,
+        Action<ClickHouseWindowOverClause> window, string alias = null) =>
+        FunctionOver(expr, "max", window, alias);
+
+    public IClickHouseSelectBuilder<TEntity> RowNumberOver(Action<ClickHouseWindowOverClause> window, string alias = "RowNumber")
+    {
+        _selectPredicates.Add(s =>
+        {
+            var w = new ClickHouseWindowOverClause(_config);
+            window(w);
+            s.RowNumberOver(w.Build(), alias);
+        });
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> CountOver(Action<ClickHouseWindowOverClause> window, string alias = null)
+    {
+        _selectPredicates.Add(s =>
+        {
+            var w = new ClickHouseWindowOverClause(_config);
+            window(w);
+            s.CountAllOver(w.Build(), alias);
+        });
+        return this;
+    }
+
+    private IClickHouseSelectBuilder<TEntity> FunctionOver<TCol>(Expression<Func<TCol, object>> columnExpr, string funcName,
+        Action<ClickHouseWindowOverClause> window, string alias)
+    {
+        IClassMapper map = _config.GetMap(typeof(TCol));
+        MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(columnExpr);
+        foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
+        {
+            var col = new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), "");
+            _selectPredicates.Add(s =>
+            {
+                var w = new ClickHouseWindowOverClause(_config);
+                window(w);
+                s.FunctionOver(col, funcName, w.Build(), string.IsNullOrEmpty(alias) ? exprSetting.Value : alias);
+            });
+        }
+
+        return this;
+    }
+
     public IClickHouseSelectBuilder<TEntity> Any(Expression<Func<TEntity, object>> action, string alias = null)
     {
         IClassMapper map = _config.GetMap(typeof(TEntity));
         MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(action);
         foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
-            _selectPredicates.Add(x => x.Function(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), ""), "any", string.IsNullOrEmpty(alias) ? exprSetting.Value : alias));
+            _selectPredicates.Add(x => x.Any(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), string.IsNullOrEmpty(alias) ? exprSetting.Value : alias)));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> AnyRespectNulls(Expression<Func<TEntity, object>> action, string alias = null)
+    {
+        IClassMapper map = _config.GetMap(typeof(TEntity));
+        MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(action);
+        foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
+            _selectPredicates.Add(x => x.AnyRespectNulls(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), string.IsNullOrEmpty(alias) ? exprSetting.Value : alias)));
         return this;
     }
 
@@ -438,7 +727,97 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
         IClassMapper map = _config.GetMap(typeof(TEntity));
         MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(action);
         foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
-            _selectPredicates.Add(x => x.Function(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), ""), "anyLast", string.IsNullOrEmpty(alias) ? exprSetting.Value : alias));
+            _selectPredicates.Add(x => x.AnyLast(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), string.IsNullOrEmpty(alias) ? exprSetting.Value : alias)));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> AnyLastRespectNulls(Expression<Func<TEntity, object>> action, string alias = null)
+    {
+        IClassMapper map = _config.GetMap(typeof(TEntity));
+        MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(action);
+        foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
+            _selectPredicates.Add(x => x.AnyLastRespectNulls(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), string.IsNullOrEmpty(alias) ? exprSetting.Value : alias)));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> AnyHeavy(Expression<Func<TEntity, object>> action, string alias = null)
+    {
+        IClassMapper map = _config.GetMap(typeof(TEntity));
+        MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(action);
+        foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
+            _selectPredicates.Add(x => x.AnyHeavy(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), string.IsNullOrEmpty(alias) ? exprSetting.Value : alias)));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> FirstValue(Expression<Func<TEntity, object>> action, string alias = null)
+    {
+        IClassMapper map = _config.GetMap(typeof(TEntity));
+        MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(action);
+        foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
+            _selectPredicates.Add(x => x.FirstValue(new Column(map.TableName, map.GetUserDefinedName(exprSetting.Value), string.IsNullOrEmpty(alias) ? exprSetting.Value : alias)));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> ArgMax(
+        Expression<Func<TEntity, object>> valueExpr,
+        Expression<Func<TEntity, object>> byExpr,
+        string alias = null) =>
+        ArgAggregate(valueExpr, byExpr, "argMax", alias);
+
+    public IClickHouseSelectBuilder<TEntity> ArgMin(
+        Expression<Func<TEntity, object>> valueExpr,
+        Expression<Func<TEntity, object>> byExpr,
+        string alias = null) =>
+        ArgAggregate(valueExpr, byExpr, "argMin", alias);
+
+    public IClickHouseSelectBuilder<TEntity> ArgAndMax(
+        Expression<Func<TEntity, object>> valueExpr,
+        Expression<Func<TEntity, object>> byExpr,
+        string alias = null) =>
+        ArgAggregate(valueExpr, byExpr, "argAndMax", alias);
+
+    public IClickHouseSelectBuilder<TEntity> ArgAndMin(
+        Expression<Func<TEntity, object>> valueExpr,
+        Expression<Func<TEntity, object>> byExpr,
+        string alias = null) =>
+        ArgAggregate(valueExpr, byExpr, "argAndMin", alias);
+
+    private IClickHouseSelectBuilder<TEntity> ArgAggregate(
+        Expression<Func<TEntity, object>> valueExpr,
+        Expression<Func<TEntity, object>> byExpr,
+        string kind,
+        string alias)
+    {
+        IClassMapper map = _config.GetMap(typeof(TEntity));
+        MemberUnaryResult[] v = ExpressionParser.FindMemberUnaryExpression(valueExpr);
+        MemberUnaryResult[] b = ExpressionParser.FindMemberUnaryExpression(byExpr);
+        if (v.Length != 1 || b.Length != 1)
+            throw new ArgumentException($"{kind} requires exactly one property in each expression.");
+
+        var valueCol = new Column(map.TableName, map.GetUserDefinedName(v[0].Value), "");
+        var byCol = new Column(map.TableName, map.GetUserDefinedName(b[0].Value), "");
+        var outAlias = string.IsNullOrEmpty(alias) ? v[0].Value : alias;
+
+        _selectPredicates.Add(s =>
+        {
+            switch (kind)
+            {
+                case "argMax":
+                    s.ArgMax(valueCol, byCol, outAlias);
+                    break;
+                case "argMin":
+                    s.ArgMin(valueCol, byCol, outAlias);
+                    break;
+                case "argAndMax":
+                    s.ArgAndMax(valueCol, byCol, outAlias);
+                    break;
+                case "argAndMin":
+                    s.ArgAndMin(valueCol, byCol, outAlias);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
+            }
+        });
         return this;
     }
 
@@ -498,6 +877,43 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
         return this;
     }
 
+    public IClickHouseSelectBuilder<TEntity> With<TSub>(string alias, Action<IClickHouseBuilder<TSub>> action)
+    {
+        if (string.IsNullOrWhiteSpace(alias))
+            throw new ArgumentException("CTE alias is required.", nameof(alias));
+        if (action == null)
+            throw new ArgumentNullException(nameof(action));
+
+        _commonTableExpressions.Add((false, alias, (cfg, dict) =>
+        {
+            var sub = new ClickHouseBuilder<TSub>(cfg);
+            sub.BindParametersFrom(dict);
+            action(sub);
+            return sub.GetSql();
+        }));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> WithRecursive(string alias, string innerSelectSql)
+    {
+        if (string.IsNullOrWhiteSpace(alias))
+            throw new ArgumentException("CTE alias is required.", nameof(alias));
+        if (innerSelectSql == null)
+            throw new ArgumentNullException(nameof(innerSelectSql));
+
+        _commonTableExpressions.Add((true, alias, (_, _) => innerSelectSql));
+        return this;
+    }
+
+    public IClickHouseSelectBuilder<TEntity> FromCte(string cteName, string alias = null)
+    {
+        if (string.IsNullOrWhiteSpace(cteName))
+            throw new ArgumentException("CTE name is required.", nameof(cteName));
+
+        _fromTable = new Table("", cteName, alias);
+        return this;
+    }
+
     public override SqlQuery ToSql()
     {
         _currentParameters = new Dictionary<string, object>();
@@ -524,6 +940,10 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
     protected string GetSqlInternal(bool withEnd)
     {
         _builder = new ClickHouseSqlBuilder();
+        var withPrefix = BuildCommonTableExpressionPrefix();
+        if (withPrefix != null)
+            _builder.AddSql(withPrefix);
+
         IClassMapper obj = _config.GetMap(typeof(TEntity));
         var table = new Table(obj.TableName);
 
@@ -602,6 +1022,34 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
 
         return withEnd ? _builder.Build() : _builder.BuildWithoutEnd();
     }
+
+    private string BuildCommonTableExpressionPrefix()
+    {
+        if (_commonTableExpressions.Count == 0)
+            return null;
+
+        var anyRecursive = false;
+        var parts = new List<string>(_commonTableExpressions.Count);
+        foreach (var (recursive, alias, build) in _commonTableExpressions)
+        {
+            if (recursive)
+                anyRecursive = true;
+
+            var inner = NormalizeCteInnerSql(build(_config, _currentParameters));
+            parts.Add($"{QuoteCteName(alias)} AS ({inner})");
+        }
+
+        return (anyRecursive ? "WITH RECURSIVE " : "WITH ") + string.Join(", ", parts) + " ";
+    }
+
+    private static string NormalizeCteInnerSql(string sql)
+    {
+        if (string.IsNullOrEmpty(sql))
+            return sql;
+        return sql.TrimEnd().TrimEnd(';').TrimEnd();
+    }
+
+    private string QuoteCteName(string name) => "\"" + EscapeIdentifier(name) + "\"";
 
     protected void RecursiveParseSelect<T>()
     {

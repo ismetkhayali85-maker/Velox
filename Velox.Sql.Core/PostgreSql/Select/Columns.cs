@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using Velox.Sql.Core.Impl;
 using Velox.Sql.Core.Interfaces;
+using Velox.Sql.Core.Windowing;
 
 namespace Velox.Sql.Core.PostgreSql.Select;
 
@@ -271,6 +272,63 @@ public sealed class Columns : ISelect
     {
         var castedType = SqlHelper.ConvertEnum<PostgreSqlTypes>(sqlType);
         _sql.Append("::").Append(SqlHelper.ToString(castedType));
+        return this;
+    }
+
+    public ISelect FunctionOver(IColumn column, string funcName, Action<IWindowOver> configure, string funcAlias = "")
+    {
+        var over = new WindowOverClause();
+        configure(over);
+        return FunctionOver(column, funcName, over.ToString(), funcAlias);
+    }
+
+    public ISelect FunctionOver(IColumn column, string funcName, string overClauseSql, string funcAlias = "")
+    {
+        IsFirst();
+
+        _sql.Append(funcName).Append('(').Append(column.ShortName).Append(") OVER (").Append(overClauseSql).Append(')');
+
+        if (!string.IsNullOrEmpty(funcAlias))
+            _sql.Append(" AS ").AppendIdentifier(funcAlias);
+
+        return this;
+    }
+
+    public ISelect RowNumberOver(Action<IWindowOver> configure, string funcAlias = "")
+    {
+        var over = new WindowOverClause();
+        configure(over);
+        return RowNumberOver(over.ToString(), funcAlias);
+    }
+
+    public ISelect RowNumberOver(string overClauseSql, string funcAlias = "")
+    {
+        IsFirst();
+
+        _sql.Append("ROW_NUMBER() OVER (").Append(overClauseSql).Append(')');
+
+        if (!string.IsNullOrEmpty(funcAlias))
+            _sql.Append(" AS ").AppendIdentifier(funcAlias);
+
+        return this;
+    }
+
+    public ISelect CountAllOver(Action<IWindowOver> configure, string funcAlias = "")
+    {
+        var over = new WindowOverClause();
+        configure(over);
+        return CountAllOver(over.ToString(), funcAlias);
+    }
+
+    public ISelect CountAllOver(string overClauseSql, string funcAlias = "")
+    {
+        IsFirst();
+
+        _sql.Append("COUNT(*) OVER (").Append(overClauseSql).Append(')');
+
+        if (!string.IsNullOrEmpty(funcAlias))
+            _sql.Append(" AS ").AppendIdentifier(funcAlias);
+
         return this;
     }
 

@@ -33,4 +33,16 @@ public class SortTests : TestBase
 
         Assert.Equal("SELECT \"test_table\".\"id\" AS \"Id\", \"test_table\".\"name\" AS \"Name\" FROM \"test_table\" ORDER BY \"test_table\".\"id\" DESC;", sql);
     }
+
+    [Fact]
+    public void OrderBy_SortByAlias_OrdersBySelectListAliasNotTableColumn()
+    {
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
+            .OrderBy(true, x => x.Name, sortByAlias: true)
+            .ToDebugSql();
+
+        Assert.Equal(
+            "SELECT \"test_table\".\"id\" AS \"Id\", \"test_table\".\"name\" AS \"Name\" FROM \"test_table\" ORDER BY \"Name\" ASC;",
+            sql);
+    }
 }

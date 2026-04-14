@@ -21,6 +21,7 @@ public class PostgresSelectBuilder<TEntity> : PostgresBuilderBase<TEntity>, IPos
     protected readonly List<Action<IWhere>> _wherePredicates = new();
     protected readonly List<Func<string>> _joinPredicates = new();
     protected readonly List<(string op, string sql)> _setOperations = new();
+    protected readonly List<(bool Recursive, string Alias, Func<PgSqlConfiguration, Dictionary<string, object>, string> Build)> _commonTableExpressions = new();
     protected Action<IHaving> _havingPredicates;
     
     protected ITable _fromTable;
@@ -293,12 +294,19 @@ public class PostgresSelectBuilder<TEntity> : PostgresBuilderBase<TEntity>, IPos
         {
             MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(expr);
             foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
-                if (isAsc)
+                if (sortByAlias)
+                {
+                    if (isAsc)
+                        _orderPredicates.Add(order => order.AscByAlias(exprSetting.Value));
+                    else
+                        _orderPredicates.Add(order => order.DescByAlias(exprSetting.Value));
+                }
+                else if (isAsc)
                     _orderPredicates.Add(order =>
-                        order.Asc(table, sortByAlias ? exprSetting.Value : map.GetUserDefinedName(exprSetting.Value)));
+                        order.Asc(table, map.GetUserDefinedName(exprSetting.Value)));
                 else
                     _orderPredicates.Add(order =>
-                        order.Desc(table, sortByAlias ? exprSetting.Value : map.GetUserDefinedName(exprSetting.Value)));
+                        order.Desc(table, map.GetUserDefinedName(exprSetting.Value)));
             return this;
         }
 
@@ -438,6 +446,64 @@ public class PostgresSelectBuilder<TEntity> : PostgresBuilderBase<TEntity>, IPos
         return this;
     }
 
+    public IPostgresSelectBuilder<TEntity> SumOver<TSum>(Expression<Func<TSum, object>> sumExpr,
+        Action<PostgresWindowOverClause> window, string alias = null) =>
+        FunctionOver(sumExpr, "SUM", window, alias);
+
+    public IPostgresSelectBuilder<TEntity> AvgOver<TAvg>(Expression<Func<TAvg, object>> expr,
+        Action<PostgresWindowOverClause> window, string alias = null) =>
+        FunctionOver(expr, "AVG", window, alias);
+
+    public IPostgresSelectBuilder<TEntity> MinOver<TMin>(Expression<Func<TMin, object>> expr,
+        Action<PostgresWindowOverClause> window, string alias = null) =>
+        FunctionOver(expr, "MIN", window, alias);
+
+    public IPostgresSelectBuilder<TEntity> MaxOver<TMax>(Expression<Func<TMax, object>> expr,
+        Action<PostgresWindowOverClause> window, string alias = null) =>
+        FunctionOver(expr, "MAX", window, alias);
+
+    public IPostgresSelectBuilder<TEntity> RowNumberOver(Action<PostgresWindowOverClause> window, string alias = "RowNumber")
+    {
+        _selectedPredicates.Add(s =>
+        {
+            var w = new PostgresWindowOverClause(_config);
+            window(w);
+            s.RowNumberOver(w.Build(), alias);
+        });
+        return this;
+    }
+
+    public IPostgresSelectBuilder<TEntity> CountOver(Action<PostgresWindowOverClause> window, string alias = null)
+    {
+        _selectedPredicates.Add(s =>
+        {
+            var w = new PostgresWindowOverClause(_config);
+            window(w);
+            s.CountAllOver(w.Build(), alias);
+        });
+        return this;
+    }
+
+    private IPostgresSelectBuilder<TEntity> FunctionOver<TCol>(Expression<Func<TCol, object>> columnExpr, string funcName,
+        Action<PostgresWindowOverClause> window, string alias)
+    {
+        IClassMapper map = _config.GetMap(typeof(TCol));
+        var table = new Table(map.SchemaName, map.TableName);
+        MemberUnaryResult[] exprSettings = ExpressionParser.FindMemberUnaryExpression(columnExpr);
+        foreach (MemberUnaryResult exprSetting in exprSettings.AsSpan())
+        {
+            var col = new Column(table, map.GetUserDefinedName(exprSetting.Value), "");
+            _selectedPredicates.Add(s =>
+            {
+                var w = new PostgresWindowOverClause(_config);
+                window(w);
+                s.FunctionOver(col, funcName, w.Build(), string.IsNullOrEmpty(alias) ? exprSetting.Value : alias);
+            });
+        }
+
+        return this;
+    }
+
     public IPostgresSelectBuilder<TEntity> Union(IWhereSubQuery query)
     {
         _setOperations.Add((" UNION ", query.GetSql()));
@@ -476,6 +542,43 @@ public class PostgresSelectBuilder<TEntity> : PostgresBuilderBase<TEntity>, IPos
         return this;
     }
 
+    public IPostgresSelectBuilder<TEntity> With<TSub>(string alias, Action<IPostgresBuilder<TSub>> action)
+    {
+        if (string.IsNullOrWhiteSpace(alias))
+            throw new ArgumentException("CTE alias is required.", nameof(alias));
+        if (action == null)
+            throw new ArgumentNullException(nameof(action));
+
+        _commonTableExpressions.Add((false, alias, (cfg, dict) =>
+        {
+            var sub = new PostgresBuilder<TSub>(cfg);
+            sub.BindParametersFrom(dict);
+            action(sub);
+            return sub.GetSql();
+        }));
+        return this;
+    }
+
+    public IPostgresSelectBuilder<TEntity> WithRecursive(string alias, string innerSelectSql)
+    {
+        if (string.IsNullOrWhiteSpace(alias))
+            throw new ArgumentException("CTE alias is required.", nameof(alias));
+        if (innerSelectSql == null)
+            throw new ArgumentNullException(nameof(innerSelectSql));
+
+        _commonTableExpressions.Add((true, alias, (_, _) => innerSelectSql));
+        return this;
+    }
+
+    public IPostgresSelectBuilder<TEntity> FromCte(string cteName, string alias = null)
+    {
+        if (string.IsNullOrWhiteSpace(cteName))
+            throw new ArgumentException("CTE name is required.", nameof(cteName));
+
+        _fromTable = new Table("", cteName, alias);
+        return this;
+    }
+
     public override SqlQuery ToSql()
     {
         _currentParameters = new Dictionary<string, object>();
@@ -500,6 +603,10 @@ public class PostgresSelectBuilder<TEntity> : PostgresBuilderBase<TEntity>, IPos
     protected string GetSqlInternal(bool withEnd)
     {
         _builder = new PostgreSqlBuilder();
+        var withPrefix = BuildCommonTableExpressionPrefix();
+        if (withPrefix != null)
+            _builder.AddSql(withPrefix);
+
         IClassMapper map = _config.GetMap(typeof(TEntity));
 
         if (_selectedPredicates.Count == 0)
@@ -575,6 +682,34 @@ public class PostgresSelectBuilder<TEntity> : PostgresBuilderBase<TEntity>, IPos
 
         return withEnd ? _builder.Build() : _builder.BuildWithoutEnd();
     }
+
+    private string BuildCommonTableExpressionPrefix()
+    {
+        if (_commonTableExpressions.Count == 0)
+            return null;
+
+        var anyRecursive = false;
+        var parts = new List<string>(_commonTableExpressions.Count);
+        foreach (var (recursive, alias, build) in _commonTableExpressions)
+        {
+            if (recursive)
+                anyRecursive = true;
+
+            var inner = NormalizeCteInnerSql(build(_config, _currentParameters));
+            parts.Add($"{QuoteCteName(alias)} AS ({inner})");
+        }
+
+        return (anyRecursive ? "WITH RECURSIVE " : "WITH ") + string.Join(", ", parts) + " ";
+    }
+
+    private static string NormalizeCteInnerSql(string sql)
+    {
+        if (string.IsNullOrEmpty(sql))
+            return sql;
+        return sql.TrimEnd().TrimEnd(';').TrimEnd();
+    }
+
+    private string QuoteCteName(string name) => "\"" + EscapeIdentifier(name) + "\"";
 
     protected void RecursiveParseSelect<T>()
     {

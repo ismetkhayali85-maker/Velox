@@ -43,4 +43,16 @@ public class SortTests : TestBase
 
         Assert.Equal("SELECT \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\" FROM \"pg_table\" ORDER BY \"pg_table\".\"id\" DESC;", sql);
     }
+
+    [Fact]
+    public void OrderBy_SortByAlias_OrdersBySelectListAliasNotTableColumn()
+    {
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
+            .OrderBy(true, x => x.Description, sortByAlias: true)
+            .ToDebugSql();
+
+        Assert.Equal(
+            "SELECT \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\" FROM \"pg_table\" ORDER BY \"Description\" ASC;",
+            sql);
+    }
 }

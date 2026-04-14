@@ -1,4 +1,6 @@
-﻿namespace Velox.Sql.Core.Interfaces;
+﻿using System;
+
+namespace Velox.Sql.Core.Interfaces;
 
 public interface ISelect : ISqlConvertable<ISelect>
 {
@@ -26,4 +28,34 @@ public interface ISelect : ISqlConvertable<ISelect>
     ISelect Sum(IColumn column);
     ISelect Mid(IColumn column, int start, int length);
     ISelect Round(IColumn column, int length);
+
+    /// <summary>
+    /// <c>func(column) OVER (...)</c> — supply <paramref name="configure"/> to build PARTITION BY / ORDER BY.
+    /// </summary>
+    ISelect FunctionOver(IColumn column, string funcName, Action<IWindowOver> configure, string funcAlias = "");
+
+    /// <summary>
+    /// <c>func(column) OVER (...)</c> with a pre-built window clause (contents inside the parentheses).
+    /// </summary>
+    ISelect FunctionOver(IColumn column, string funcName, string overClauseSql, string funcAlias = "");
+
+    /// <summary>
+    /// <c>ROW_NUMBER() OVER (...)</c>.
+    /// </summary>
+    ISelect RowNumberOver(Action<IWindowOver> configure, string funcAlias = "");
+
+    /// <summary>
+    /// <c>ROW_NUMBER() OVER (...)</c> with a pre-built window clause.
+    /// </summary>
+    ISelect RowNumberOver(string overClauseSql, string funcAlias = "");
+
+    /// <summary>
+    /// <c>COUNT(*) OVER (...)</c>.
+    /// </summary>
+    ISelect CountAllOver(Action<IWindowOver> configure, string funcAlias = "");
+
+    /// <summary>
+    /// <c>COUNT(*) OVER (...)</c> with a pre-built window clause.
+    /// </summary>
+    ISelect CountAllOver(string overClauseSql, string funcAlias = "");
 }
