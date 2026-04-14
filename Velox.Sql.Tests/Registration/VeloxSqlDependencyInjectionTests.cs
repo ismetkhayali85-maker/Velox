@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Velox.Sql;
 using Velox.Sql.DependencyInjection;
 using Velox.Sql.Impl;
 using Velox.Sql.Registration;

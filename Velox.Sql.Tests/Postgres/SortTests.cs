@@ -23,4 +23,24 @@ public class SortTests : TestBase
 
         Assert.Equal("SELECT \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\" FROM \"pg_table\" ORDER BY \"pg_table\".\"id\" DESC;", sql);
     }
+
+    [Fact]
+    public void OrderByAsc_ReturnsSameSqlAsOrderByTrue()
+    {
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
+            .OrderByAsc(x => x.Id)
+            .ToDebugSql();
+
+        Assert.Equal("SELECT \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\" FROM \"pg_table\" ORDER BY \"pg_table\".\"id\" ASC;", sql);
+    }
+
+    [Fact]
+    public void OrderByDesc_ReturnsSameSqlAsOrderByFalse()
+    {
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
+            .OrderByDesc(x => x.Id)
+            .ToDebugSql();
+
+        Assert.Equal("SELECT \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\" FROM \"pg_table\" ORDER BY \"pg_table\".\"id\" DESC;", sql);
+    }
 }

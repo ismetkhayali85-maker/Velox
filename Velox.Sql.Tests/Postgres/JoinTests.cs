@@ -1,5 +1,4 @@
 #pragma warning disable CS0618
-using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Impl.Builders;
 using Velox.Sql.Impl.Map;

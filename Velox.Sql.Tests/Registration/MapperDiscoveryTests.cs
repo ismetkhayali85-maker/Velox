@@ -1,6 +1,4 @@
 using System.Reflection;
-using Velox.Sql;
-using Velox.Sql.Impl;
 using Velox.Sql.Registration;
 using Velox.Sql.Tests.Support;
 

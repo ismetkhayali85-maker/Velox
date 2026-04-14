@@ -8,11 +8,9 @@ using Velox.Sql.Core.ClickHouseSql.Select;
 using Velox.Sql.Core.ClickHouseSql.Where;
 using Velox.Sql.Core.ClickHouseSql.GroupBy;
 using Velox.Sql.Core.ClickHouseSql.OrderBy;
-using Velox.Sql.Core.ClickHouseSql.Having;
 using Velox.Sql.Core.Impl;
 using Velox.Sql.Core.Interfaces;
 using Velox.Sql.Expressions;
-using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
 using Velox.Sql.Impl.Clauses;
 using Velox.Sql.Interfaces;
@@ -322,6 +320,18 @@ public class ClickHouseSelectBuilder<TEntity> : ClickHouseBuilderBase<TEntity>, 
     {
         return OrderBy<TEntity>(isAsc, expr, sortByAlias);
     }
+
+    public IClickHouseSelectBuilder<TEntity> OrderByAsc<T>(Expression<Func<T, object>> expr = null, bool sortByAlias = false) =>
+        OrderBy<T>(true, expr, sortByAlias);
+
+    public IClickHouseSelectBuilder<TEntity> OrderByDesc<T>(Expression<Func<T, object>> expr = null, bool sortByAlias = false) =>
+        OrderBy<T>(false, expr, sortByAlias);
+
+    public IClickHouseSelectBuilder<TEntity> OrderByAsc(Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false) =>
+        OrderBy<TEntity>(true, expr, sortByAlias);
+
+    public IClickHouseSelectBuilder<TEntity> OrderByDesc(Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false) =>
+        OrderBy<TEntity>(false, expr, sortByAlias);
 
     public IClickHouseSelectBuilder<TEntity> Limit(uint value)
     {

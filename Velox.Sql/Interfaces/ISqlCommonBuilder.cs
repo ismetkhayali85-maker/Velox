@@ -42,6 +42,10 @@ public interface ISqlCommonBuilder<TBuilder, TEntity> : ISqlBuilder
     TBuilder GroupBy(Expression<Func<TEntity, object>> expression = null);
     TBuilder OrderBy<T>(bool isAsc = true, Expression<Func<T, object>> expr = null, bool sortByAlias = false);
     TBuilder OrderBy(bool isAsc = true, Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false);
+    TBuilder OrderByAsc<T>(Expression<Func<T, object>> expr = null, bool sortByAlias = false);
+    TBuilder OrderByDesc<T>(Expression<Func<T, object>> expr = null, bool sortByAlias = false);
+    TBuilder OrderByAsc(Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false);
+    TBuilder OrderByDesc(Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false);
 
     TBuilder Sum(Expression<Func<TEntity, object>> action, string alias = null);
     TBuilder Avg(Expression<Func<TEntity, object>> action, string alias = null);

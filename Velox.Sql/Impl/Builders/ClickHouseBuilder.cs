@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Velox.Sql.Core.ClickHouseSql;
-using Velox.Sql.Core.ClickHouseSql.Select;
-using Velox.Sql.Core.ClickHouseSql.Insert;
-using Velox.Sql.Core.ClickHouseSql.Update;
-using Velox.Sql.Core.ClickHouseSql.Where;
 using Velox.Sql.Impl.Builders.ClickHouse;
 using Velox.Sql.Impl.Map;
 using Velox.Sql.Interfaces;
@@ -76,5 +72,10 @@ public sealed class ClickHouseBuilder<TEntity> :
         var builder = new ClickHouseDeleteBuilder<TEntity>(_config, new ClickHouseSqlBuilder());
         if (deleteExpr != null) builder.Where(deleteExpr);
         return builder;
+    }
+
+    public IClickHouseTruncateBuilder<TEntity> Truncate()
+    {
+        return new ClickHouseTruncateBuilder<TEntity>(_config, new ClickHouseSqlBuilder());
     }
 }

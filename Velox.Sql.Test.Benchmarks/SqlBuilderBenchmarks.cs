@@ -1,8 +1,6 @@
 using BenchmarkDotNet.Attributes;
-using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
-using System.Collections.Generic;
 
 namespace Velox.Sql.Test.Benchmarks;
 
@@ -63,7 +61,7 @@ public class SqlBuilderBenchmarks
             .Where(x => x.Id > 100)
             .GroupBy(x => x.Id)
             .Having(h => h.Count(x => x.Id, Velox.Sql.Core.Impl.Operators.GreaterThan, 5))
-            .OrderBy(true, x => x.Id)
+            .OrderByAsc(x => x.Id)
             .Limit(10)
             .ToDebugSql();
     }
@@ -76,7 +74,7 @@ public class SqlBuilderBenchmarks
             .Where(x => x.Id > 100)
             .GroupBy(x => x.Id)
             .Having(h => h.Count(x => x.Id, Velox.Sql.Core.Impl.Operators.GreaterThan, 5))
-            .OrderBy(true, x => x.Id)
+            .OrderByAsc(x => x.Id)
             .Limit(10)
             .ToDebugSql();
     }

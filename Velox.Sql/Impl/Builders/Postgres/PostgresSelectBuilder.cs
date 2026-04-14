@@ -6,9 +6,7 @@ using System.Runtime.InteropServices;
 using Velox.Sql.Core.Impl;
 using Velox.Sql.Core.Interfaces;
 using Velox.Sql.Core.PostgreSql;
-using Velox.Sql.Core.PostgreSql.Where;
 using Velox.Sql.Expressions;
-using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
 using Velox.Sql.Impl.Clauses;
 using Velox.Sql.Interfaces;
@@ -318,6 +316,18 @@ public class PostgresSelectBuilder<TEntity> : PostgresBuilderBase<TEntity>, IPos
     {
         return OrderBy<TEntity>(isAsc, expr, sortByAlias);
     }
+
+    public IPostgresSelectBuilder<TEntity> OrderByAsc<T>(Expression<Func<T, object>> expr = null, bool sortByAlias = false) =>
+        OrderBy<T>(true, expr, sortByAlias);
+
+    public IPostgresSelectBuilder<TEntity> OrderByDesc<T>(Expression<Func<T, object>> expr = null, bool sortByAlias = false) =>
+        OrderBy<T>(false, expr, sortByAlias);
+
+    public IPostgresSelectBuilder<TEntity> OrderByAsc(Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false) =>
+        OrderBy<TEntity>(true, expr, sortByAlias);
+
+    public IPostgresSelectBuilder<TEntity> OrderByDesc(Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false) =>
+        OrderBy<TEntity>(false, expr, sortByAlias);
 
     public IPostgresSelectBuilder<TEntity> Limit(uint value)
     {

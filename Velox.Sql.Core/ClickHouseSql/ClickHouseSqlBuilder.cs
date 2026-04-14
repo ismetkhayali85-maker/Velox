@@ -1,20 +1,20 @@
- 
+
 using System;
 using System.Text;
+using Velox.Sql.Core.Impl;
 using Velox.Sql.Core.Interfaces;
 using Velox.Sql.Core.ClickHouseSql.Select;
 using Velox.Sql.Core.ClickHouseSql.Insert;
 using Velox.Sql.Core.ClickHouseSql.Update;
 using Velox.Sql.Core.ClickHouseSql.Where;
 using Velox.Sql.Core.ClickHouseSql.Having;
-using Velox.Sql.Core.ClickHouseSql.Join;
 using Velox.Sql.Core.ClickHouseSql.GroupBy;
 using Velox.Sql.Core.ClickHouseSql.OrderBy;
 
 
 namespace Velox.Sql.Core.ClickHouseSql;
 
-public sealed class ClickHouseSqlBuilder //: IClickHouseSqlBuilder
+public sealed class ClickHouseSqlBuilder
 {
     private readonly StringBuilder _sqlAppender;
 
@@ -153,6 +153,21 @@ public sealed class ClickHouseSqlBuilder //: IClickHouseSqlBuilder
             .Append(table)
             .Append(" DELETE WHERE ")
             .Append(wherePredicate.ToSql());
+        return this;
+    }
+
+    public ClickHouseSqlBuilder Truncate(ITable table, bool ifExists = false, string onCluster = null)
+    {
+        _sqlAppender.Append("TRUNCATE TABLE ");
+        if (ifExists)
+            _sqlAppender.Append("IF EXISTS ");
+        _sqlAppender.Append(table);
+        if (!string.IsNullOrEmpty(onCluster))
+        {
+            _sqlAppender.Append(" ON CLUSTER ");
+            _sqlAppender.AppendIdentifier(onCluster);
+        }
+
         return this;
     }
 

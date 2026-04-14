@@ -1,5 +1,4 @@
 using Velox.Sql.Core.Impl;
-using Xunit;
 
 namespace Velox.Sql.Tests.ClickHouse;
 

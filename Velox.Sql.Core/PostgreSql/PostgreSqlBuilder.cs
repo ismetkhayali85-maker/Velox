@@ -119,8 +119,37 @@ public sealed class PostgreSqlBuilder : ISqlBuilder<PostgreSqlBuilder>
 
     public PostgreSqlBuilder Truncate(ITable table)
     {
+        return Truncate(table, PostgreSqlTruncateIdentityOption.Unspecified,
+            PostgreSqlTruncateReferentialOption.Unspecified);
+    }
+
+    public PostgreSqlBuilder Truncate(ITable table,
+        PostgreSqlTruncateIdentityOption identity,
+        PostgreSqlTruncateReferentialOption referential)
+    {
         _sqlAppender.Append("TRUNCATE TABLE ")
             .Append(table);
+
+        switch (identity)
+        {
+            case PostgreSqlTruncateIdentityOption.RestartIdentity:
+                _sqlAppender.Append(" RESTART IDENTITY");
+                break;
+            case PostgreSqlTruncateIdentityOption.ContinueIdentity:
+                _sqlAppender.Append(" CONTINUE IDENTITY");
+                break;
+        }
+
+        switch (referential)
+        {
+            case PostgreSqlTruncateReferentialOption.Cascade:
+                _sqlAppender.Append(" CASCADE");
+                break;
+            case PostgreSqlTruncateReferentialOption.Restrict:
+                _sqlAppender.Append(" RESTRICT");
+                break;
+        }
+
         return this;
     }
 

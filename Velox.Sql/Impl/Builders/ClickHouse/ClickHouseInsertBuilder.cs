@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Velox.Sql.Core.ClickHouseSql;
 using Velox.Sql.Core.ClickHouseSql.Insert;
 using Velox.Sql.Core.Impl;
-using Velox.Sql.Core.Interfaces;
 using Velox.Sql.Impl.Map;
 using Velox.Sql.Interfaces;
 

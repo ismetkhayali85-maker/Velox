@@ -1,5 +1,3 @@
-using System;
-
 namespace Velox.Sql.Tests.Postgres;
 
 public class PostgresUnsignedClrTypesTests : TestBase

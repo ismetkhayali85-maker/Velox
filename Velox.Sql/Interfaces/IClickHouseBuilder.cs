@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Velox.Sql.Core.ClickHouseSql;
 using Velox.Sql.Core.ClickHouseSql.Select;
-using Velox.Sql.Core.Interfaces;
 
 namespace Velox.Sql.Interfaces;
 
@@ -13,6 +11,7 @@ public interface IClickHouseBuilder<TEntity> : IClickHouseSelectBuilder<TEntity>
     IClickHouseInsertBuilder<TEntity> BulkInsert(IEnumerable<TEntity> list);
     IClickHouseUpdateBuilder<TEntity> Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpr);
     IClickHouseDeleteBuilder<TEntity> Delete(Expression<Func<TEntity, bool>> deleteExpr);
+    IClickHouseTruncateBuilder<TEntity> Truncate();
 }
 
 public interface IClickHouseSelectBuilder<TEntity> : ISqlSelectBuilder<IClickHouseSelectBuilder<TEntity>, TEntity>
@@ -36,4 +35,11 @@ public interface IClickHouseUpdateBuilder<TEntity> : ISqlUpdateBuilder<IClickHou
 
 public interface IClickHouseDeleteBuilder<TEntity> : ISqlDeleteBuilder<IClickHouseDeleteBuilder<TEntity>, TEntity>
 {
+}
+
+public interface IClickHouseTruncateBuilder<TEntity> : ISqlBuilder
+{
+    IClickHouseTruncateBuilder<TEntity> IfExists();
+    IClickHouseTruncateBuilder<TEntity> OnCluster(string clusterName);
+    IClickHouseTruncateBuilder<TEntity> AddSql(string sql);
 }

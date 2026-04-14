@@ -13,4 +13,24 @@ public class SortTests : TestBase
 
         Assert.Equal("SELECT \"test_table\".\"id\" AS \"Id\", \"test_table\".\"name\" AS \"Name\" FROM \"test_table\" ORDER BY \"test_table\".\"id\" ASC;", sql);
     }
+
+    [Fact]
+    public void OrderByAsc_ReturnsCorrectSql()
+    {
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
+            .OrderByAsc(x => x.Id)
+            .ToDebugSql();
+
+        Assert.Equal("SELECT \"test_table\".\"id\" AS \"Id\", \"test_table\".\"name\" AS \"Name\" FROM \"test_table\" ORDER BY \"test_table\".\"id\" ASC;", sql);
+    }
+
+    [Fact]
+    public void OrderByDesc_ReturnsCorrectSql()
+    {
+        var sql = VeloxRuntime.ClickHouse<TestEntity>()
+            .OrderByDesc(x => x.Id)
+            .ToDebugSql();
+
+        Assert.Equal("SELECT \"test_table\".\"id\" AS \"Id\", \"test_table\".\"name\" AS \"Name\" FROM \"test_table\" ORDER BY \"test_table\".\"id\" DESC;", sql);
+    }
 }

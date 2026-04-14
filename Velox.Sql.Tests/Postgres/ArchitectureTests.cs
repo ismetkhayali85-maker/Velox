@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using Velox.Sql;
-using Velox.Sql.Impl;
-using Velox.Sql.Interfaces;
-using Xunit;
-
 namespace Velox.Sql.Tests.Postgres;
 
 public class ArchitectureTests : TestBase

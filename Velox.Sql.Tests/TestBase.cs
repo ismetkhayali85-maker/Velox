@@ -1,4 +1,3 @@
-using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
 using Velox.Sql.Interfaces;

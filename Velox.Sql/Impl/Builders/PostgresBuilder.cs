@@ -72,4 +72,9 @@ public sealed class PostgresBuilder<TEntity> :
         if (deleteExpr != null) builder.Where(deleteExpr);
         return builder;
     }
+
+    public IPostgresTruncateBuilder<TEntity> Truncate()
+    {
+        return new PostgresTruncateBuilder<TEntity>(_config, new PostgreSqlBuilder());
+    }
 }

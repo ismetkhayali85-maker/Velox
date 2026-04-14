@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Globalization;
-using System.Linq;
 using Velox.Sql.Core.ClickHouseSql;
 using Velox.Sql.Core.ClickHouseSql.Where;
 using Velox.Sql.Core.Impl;
 using Velox.Sql.Core.Interfaces;
 using Velox.Sql.Expressions;
-using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
-using Velox.Sql.Interfaces;
 
 namespace Velox.Sql.Impl.Builders.ClickHouse;
 

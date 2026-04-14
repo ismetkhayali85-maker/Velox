@@ -11,6 +11,7 @@ public interface IPostgresBuilder<TEntity> : IPostgresSelectBuilder<TEntity>
     IPostgresInsertBuilder<TEntity> BulkInsert(IEnumerable<TEntity> list);
     IPostgresUpdateBuilder<TEntity> Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpr);
     IPostgresDeleteBuilder<TEntity> Delete(Expression<Func<TEntity, bool>> deleteExpr);
+    IPostgresTruncateBuilder<TEntity> Truncate();
 }
 
 public interface IPostgresSelectBuilder<TEntity> : ISqlSelectBuilder<IPostgresSelectBuilder<TEntity>, TEntity>
@@ -38,4 +39,13 @@ public interface IPostgresDeleteBuilder<TEntity> : ISqlDeleteBuilder<IPostgresDe
     IPostgresDeleteBuilder<TEntity> Returning<T>(Expression<Func<T, object>> expr = null);
     IPostgresDeleteBuilder<TEntity> Returning(Expression<Func<TEntity, object>> expr = null);
     IPostgresDeleteBuilder<TEntity> ReturningAll();
+}
+
+public interface IPostgresTruncateBuilder<TEntity> : ISqlBuilder
+{
+    IPostgresTruncateBuilder<TEntity> RestartIdentity();
+    IPostgresTruncateBuilder<TEntity> ContinueIdentity();
+    IPostgresTruncateBuilder<TEntity> Cascade();
+    IPostgresTruncateBuilder<TEntity> Restrict();
+    IPostgresTruncateBuilder<TEntity> AddSql(string sql);
 }

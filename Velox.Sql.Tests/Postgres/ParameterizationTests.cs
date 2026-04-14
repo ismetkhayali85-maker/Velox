@@ -8,7 +8,7 @@ public class ParameterizationTests : TestBase
         var builder = VeloxRuntime.Postgres<PostgresTestEntity>();
         builder.Select()
                .Where(x => x.Id == 10 && x.Description == "Test")
-               .OrderBy<PostgresTestEntity>(true, x => x.Id);
+               .OrderByAsc<PostgresTestEntity>(x => x.Id);
 
         AssertQuery(builder,
             debug: "SELECT \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\" FROM \"pg_table\" WHERE \"pg_table\".\"id\" = 10 AND \"pg_table\".\"description\" = 'Test' ORDER BY \"pg_table\".\"id\" ASC;",

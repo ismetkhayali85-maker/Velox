@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Linq.Expressions;
 using Velox.Sql.Core.Impl;
 using Velox.Sql.Core.Interfaces;
 using Velox.Sql.Core.PostgreSql;
 using Velox.Sql.Core.PostgreSql.Where;
 using Velox.Sql.Expressions;
-using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
-using Velox.Sql.Interfaces;
 
 namespace Velox.Sql.Impl.Builders.Postgres;
 

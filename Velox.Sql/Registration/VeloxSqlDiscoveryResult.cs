@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Impl.Map;
 

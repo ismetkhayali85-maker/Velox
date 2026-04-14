@@ -1,5 +1,4 @@
 #pragma warning disable CS0618
-using Velox.Sql;
 using Velox.Sql.Core.ClickHouseSql;
 
 namespace Velox.Sql.Tests.ClickHouse;

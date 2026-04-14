@@ -1,6 +1,5 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Velox.Sql;
 using Velox.Sql.Impl;
 using Velox.Sql.Registration;
 

@@ -25,6 +25,10 @@ public interface ISqlSortBuilder<TBuilder, TEntity> : ISqlBuilder
 {
     TBuilder OrderBy<T>(bool isAsc = true, Expression<Func<T, object>> expr = null, bool sortByAlias = false);
     TBuilder OrderBy(bool isAsc = true, Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false);
+    TBuilder OrderByAsc<T>(Expression<Func<T, object>> expr = null, bool sortByAlias = false);
+    TBuilder OrderByDesc<T>(Expression<Func<T, object>> expr = null, bool sortByAlias = false);
+    TBuilder OrderByAsc(Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false);
+    TBuilder OrderByDesc(Expression<Func<TEntity, object>> expr = null, bool sortByAlias = false);
     TBuilder Limit(uint value);
     TBuilder Offset(uint value);
 }
