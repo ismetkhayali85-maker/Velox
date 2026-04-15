@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
 using Velox.Sql.Core.Impl;
 using Velox.Sql.Core.Interfaces;
@@ -36,6 +37,21 @@ public abstract class PostgresBuilderBase<TEntity> : SqlBuilderCore<TEntity>
     }
 
     protected string EscapeIdentifier(string name) => name.Replace("\"", "\"\"");
+
+    protected void AppendReturningAllColumns(Type entityType, List<Action<IReturning>> returningPredicates)
+    {
+        IClassMapper map = _config.GetMap(entityType);
+        var table = new Table(map.SchemaName, map.TableName);
+
+        var sortedProperties = map.Properties
+            .OrderByDescending(x => x.KeyType != KeyType.NotAKey)
+            .ThenByDescending(x => x.Name.Equals("id", StringComparison.OrdinalIgnoreCase))
+            .ThenBy(x => x.Name);
+
+        foreach (PropertyMap item in sortedProperties)
+            returningPredicates.Add(r =>
+                r.SetValue(new Column(table, item.ColumnName, item.Name)));
+    }
 
     protected IValue ConvertTo(object value)
     {

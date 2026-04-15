@@ -40,6 +40,18 @@ public class InsertTests : TestBase
     }
 
     [Fact]
+    public void Insert_WithReturning_NoExpression_SameAsReturningAll()
+    {
+        var entity = new PostgresTestEntity { Id = 1, Description = "Test" };
+        var sql = VeloxRuntime.Postgres<PostgresTestEntity>()
+            .Insert(entity)
+            .Returning<PostgresTestEntity>()
+            .ToDebugSql();
+
+        Assert.Equal("INSERT INTO \"pg_table\" (\"id\", \"description\") VALUES(1, 'Test') RETURNING \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\";", sql);
+    }
+
+    [Fact]
     public void BulkInsert_ReturnsCorrectSql()
     {
         var entities = new List<PostgresTestEntity>
