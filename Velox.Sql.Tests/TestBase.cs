@@ -194,6 +194,69 @@ public class PostgresUInt128OnlyEntityMapper : Mapper<PostgresUInt128OnlyEntity>
     }
 }
 
+public enum PersistenceTestEnum
+{
+    Alpha = 0,
+    Beta = 2,
+    Gamma = 5
+}
+
+public class EnumPersistenceEntity
+{
+    public int Id { get; set; }
+    public PersistenceTestEnum Kind { get; set; }
+}
+
+public class EnumNullablePersistenceEntity
+{
+    public int Id { get; set; }
+    public PersistenceTestEnum? Kind { get; set; }
+}
+
+public class EnumPersistencePostgresMapper : Mapper<EnumPersistenceEntity>
+{
+    public EnumPersistencePostgresMapper()
+    {
+        Table("pg_kind_row");
+        Map(x => x.Id).Column("id");
+        Map(x => x.Kind).Column("kind");
+        Build();
+    }
+}
+
+public class EnumNullablePostgresMapper : Mapper<EnumNullablePersistenceEntity>
+{
+    public EnumNullablePostgresMapper()
+    {
+        Table("pg_kind_null_row");
+        Map(x => x.Id).Column("id");
+        Map(x => x.Kind).Column("kind").Nullable();
+        Build();
+    }
+}
+
+public class EnumPersistenceClickHouseMapper : Mapper<EnumPersistenceEntity>
+{
+    public EnumPersistenceClickHouseMapper()
+    {
+        Table("ch_kind_row");
+        Map(x => x.Id).Column("id");
+        Map(x => x.Kind).Column("kind");
+        Build();
+    }
+}
+
+public class EnumNullableClickHouseMapper : Mapper<EnumNullablePersistenceEntity>
+{
+    public EnumNullableClickHouseMapper()
+    {
+        Table("ch_kind_null_row");
+        Map(x => x.Id).Column("id");
+        Map(x => x.Kind).Column("kind").Nullable();
+        Build();
+    }
+}
+
 public class ClickHouseJoinEntityMapper : Mapper<ClickHouseJoinEntity>
 {
     public ClickHouseJoinEntityMapper()
@@ -220,7 +283,9 @@ public abstract class TestBase
             new PostgresUIntOnlyEntityMapper(),
             new PostgresUShortOnlyEntityMapper(),
             new PostgresNUIntOnlyEntityMapper(),
-            new PostgresUInt128OnlyEntityMapper()
+            new PostgresUInt128OnlyEntityMapper(),
+            new EnumPersistencePostgresMapper(),
+            new EnumNullablePostgresMapper()
         });
 
         var clickHouse = new ClickHouseSqlConfiguration(new List<IClassMapper>
@@ -228,7 +293,9 @@ public abstract class TestBase
             new TestEntityMapper(),
             new DateTimeEntityMapper(),
             new NullableTestEntityMapper(),
-            new ClickHouseJoinEntityMapper()
+            new ClickHouseJoinEntityMapper(),
+            new EnumPersistenceClickHouseMapper(),
+            new EnumNullableClickHouseMapper()
         });
 
         VeloxRuntime = new VeloxSql(postgres, clickHouse);

@@ -42,6 +42,10 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
         if (value == null || value.ToString() == "null")
             return new ClickHouseValue();
 
+        var valueType = value.GetType();
+        if (valueType.IsEnum)
+            return ConvertTo(Convert.ChangeType(value, Enum.GetUnderlyingType(valueType)));
+
         if (value is DateTime dt)
             return new ClickHouseValue(dt.ToString("yyyy-MM-dd HH:mm:ss"), false);
 
@@ -58,6 +62,8 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
         if (value is int i) return new ClickHouseValue(i.ToString(), false);
         if (value is long l) return new ClickHouseValue(l.ToString(), false);
         if (value is short sh) return new ClickHouseValue(sh.ToString(), false);
+        if (value is byte by) return new ClickHouseValue(by.ToString(), false);
+        if (value is sbyte sb) return new ClickHouseValue(sb.ToString(), false);
         if (value is decimal d) return new ClickHouseValue(d.ToString(CultureInfo.InvariantCulture), false);
         if (value is float f) return new ClickHouseValue(f.ToString(CultureInfo.InvariantCulture), false);
         if (value is double db) return new ClickHouseValue(db.ToString(CultureInfo.InvariantCulture), false);
@@ -73,12 +79,8 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
             return (ClickHouseValue)ConvertTo($"%{val}%");
         }
 
-        if (_currentParameters != null && item.RightOperatorValue != null)
-        {
-            var paramName = "p" + _currentParameters.Count;
-            _currentParameters.Add(paramName, item.RightOperatorValue);
-            return new ClickHouseValue("@" + paramName, false);
-        }
+        if (item.RightOperatorValue != null)
+            return (ClickHouseValue)ConvertTo(item.RightOperatorValue);
 
         string value = item.RightOperatorName;
 
@@ -90,12 +92,6 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
                 out DateTime dateOnly))
             return new ClickHouseValue(dateOnly.ToString("yyyy-MM-dd"), true);
 
-        if (item.RightOperatorValue != null && item.RightOperatorValue.GetType().IsEnum)
-            return new ClickHouseValue(((int)item.RightOperatorValue).ToString(), false);
-
-        if (item.RightOperatorValue is bool b)
-            return new ClickHouseValue(b ? "true" : "false", false);
-
         if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out double d))
             return new ClickHouseValue(d.ToString(CultureInfo.InvariantCulture), false);
 
@@ -106,6 +102,20 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
     {
         if (value == null || valueStr == "null")
             return new ClickHouseValue("null", false);
+
+        var nonNullableType = Nullable.GetUnderlyingType(type) ?? type;
+        if (nonNullableType.IsEnum)
+        {
+            var underlying = Convert.ChangeType(value, Enum.GetUnderlyingType(nonNullableType));
+            if (_currentParameters != null)
+            {
+                var paramName = "p" + _currentParameters.Count;
+                _currentParameters.Add(paramName, underlying);
+                return new ClickHouseValue("@" + paramName, false);
+            }
+
+            return new ClickHouseValue(Convert.ToString(underlying, CultureInfo.InvariantCulture), false);
+        }
 
         if (_currentParameters != null)
         {

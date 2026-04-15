@@ -53,4 +53,17 @@ public class ParameterizationTests : TestBase
             sql:   "SELECT \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\" FROM \"pg_table\" WHERE \"pg_table\".\"description\"::text ILIKE @p0;",
             expectedParams: new { p0 = "%abc%" });
     }
+
+    [Fact]
+    public void Where_Enum_WithParameters_UsesUnderlyingInteger()
+    {
+        var builder = VeloxRuntime.Postgres<EnumPersistenceEntity>();
+        builder.Select()
+            .Where(x => x.Kind == PersistenceTestEnum.Beta);
+
+        AssertQuery(builder,
+            debug: "SELECT \"pg_kind_row\".\"id\" AS \"Id\", \"pg_kind_row\".\"kind\" AS \"Kind\" FROM \"pg_kind_row\" WHERE \"pg_kind_row\".\"kind\" = 2;",
+            sql:   "SELECT \"pg_kind_row\".\"id\" AS \"Id\", \"pg_kind_row\".\"kind\" AS \"Kind\" FROM \"pg_kind_row\" WHERE \"pg_kind_row\".\"kind\" = @p0;",
+            expectedParams: new { p0 = 2 });
+    }
 }

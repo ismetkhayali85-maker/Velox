@@ -44,6 +44,10 @@ public abstract class PostgresBuilderBase<TEntity> : SqlBuilderCore<TEntity>
 
         ThrowIfUnsignedClrTypeNotSupportedForPostgres(value);
 
+        var valueType = value.GetType();
+        if (valueType.IsEnum)
+            return ConvertTo(Convert.ChangeType(value, Enum.GetUnderlyingType(valueType)));
+
         if (value is DateTime dt)
             return new Value(dt);
 
@@ -60,6 +64,8 @@ public abstract class PostgresBuilderBase<TEntity> : SqlBuilderCore<TEntity>
         if (value is int i) return new Value(i);
         if (value is long l) return new Value(l.ToString(), false, true);
         if (value is short sh) return new Value((int)sh);
+        if (value is byte by) return new Value((int)by);
+        if (value is sbyte sb) return new Value((int)sb);
         if (value is decimal d) return new Value(d.ToString(CultureInfo.InvariantCulture), false, true);
         if (value is float f) return new Value(f.ToString(CultureInfo.InvariantCulture), false, true);
         if (value is double db) return new Value(db.ToString(CultureInfo.InvariantCulture), false, true);
@@ -97,12 +103,7 @@ public abstract class PostgresBuilderBase<TEntity> : SqlBuilderCore<TEntity>
             return new Value();
 
         if (item.RightOperatorValue != null)
-        {
-            if (item.RightOperatorValue.GetType().IsEnum)
-                return new Value(((int)item.RightOperatorValue).ToString(), false, _currentParameters != null);
-                
             return ConvertTo(item.RightOperatorValue);
-        }
 
         string value = item.RightOperatorName;
 
