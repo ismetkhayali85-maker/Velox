@@ -1,5 +1,7 @@
 #pragma warning disable CS0618
 
+using System.Globalization;
+
 namespace Velox.Sql.Tests.Postgres;
 
 public class WhereTests : TestBase
@@ -59,6 +61,25 @@ public class WhereTests : TestBase
             .ToDebugSql();
 
         Assert.Equal("SELECT \"pg_table\".\"id\" AS \"Id\", \"pg_table\".\"description\" AS \"Description\" FROM \"pg_table\" WHERE \"pg_table\".\"id\" BETWEEN 1 AND 10;", sql);
+    }
+
+    [Fact]
+    public void Where_DateTimeRange_UsesQuotedTimestampLiterals()
+    {
+        var from = new DateTime(2026, 4, 27, 5, 36, 5, DateTimeKind.Unspecified);
+        var to = new DateTime(2026, 12, 30, 21, 0, 0, DateTimeKind.Unspecified);
+        var qFrom = from.ToString(CultureInfo.InvariantCulture);
+        var qTo = to.ToString(CultureInfo.InvariantCulture);
+
+        var sql = VeloxRuntime.Postgres<DateTimeEntity>()
+            .Where(x => x.CreatedAt >= from && x.CreatedAt <= to)
+            .ToDebugSql();
+
+        var expected =
+            "SELECT \"date_table\".\"id\" AS \"Id\", \"date_table\".\"created_at\" AS \"CreatedAt\" FROM \"date_table\" WHERE \"date_table\".\"created_at\" >= '" +
+            qFrom + "' AND \"date_table\".\"created_at\" <= '" + qTo + "';";
+
+        Assert.Equal(expected, sql);
     }
 
     [Fact]

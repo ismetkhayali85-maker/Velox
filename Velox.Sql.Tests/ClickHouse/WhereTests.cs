@@ -85,6 +85,21 @@ public class WhereTests : TestBase
     }
 
     [Fact]
+    public void Where_DateTimeRange_UsesQuotedLiteralsForClickHouse()
+    {
+        var from = new DateTime(2026, 4, 27, 5, 36, 5, DateTimeKind.Unspecified);
+        var to = new DateTime(2026, 12, 30, 21, 0, 0, DateTimeKind.Unspecified);
+
+        var sql = VeloxRuntime.ClickHouse<DateTimeEntity>()
+            .Where(x => x.CreatedAt >= from && x.CreatedAt <= to)
+            .ToDebugSql();
+
+        Assert.Equal(
+            "SELECT \"date_table\".\"id\" AS \"Id\", \"date_table\".\"created_at\" AS \"CreatedAt\" FROM \"date_table\" WHERE \"date_table\".\"created_at\" >= '2026-04-27 05:36:05' AND \"date_table\".\"created_at\" <= '2026-12-30 21:00:00';",
+            sql);
+    }
+
+    [Fact]
     public void Where_WithILike_ReturnsCorrectSql()
     {
         var sql = VeloxRuntime.ClickHouse<TestEntity>()

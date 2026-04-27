@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Velox.Sql.Tests.Postgres;
 
 public class ParameterizationTests : TestBase
@@ -65,5 +67,23 @@ public class ParameterizationTests : TestBase
             debug: "SELECT \"pg_kind_row\".\"id\" AS \"Id\", \"pg_kind_row\".\"kind\" AS \"Kind\" FROM \"pg_kind_row\" WHERE \"pg_kind_row\".\"kind\" = 2;",
             sql:   "SELECT \"pg_kind_row\".\"id\" AS \"Id\", \"pg_kind_row\".\"kind\" AS \"Kind\" FROM \"pg_kind_row\" WHERE \"pg_kind_row\".\"kind\" = @p0;",
             expectedParams: new { p0 = 2 });
+    }
+
+    [Fact]
+    public void Where_DateTime_IsQuotedLiteral_WhileNonDateUsesParameters()
+    {
+        var from = new DateTime(2026, 4, 27, 5, 36, 5, DateTimeKind.Unspecified);
+        var q = from.ToString(CultureInfo.InvariantCulture);
+
+        var builder = VeloxRuntime.Postgres<DateTimeEntity>();
+        builder.Select()
+            .Where(x => x.Id == 1 && x.CreatedAt >= from);
+
+        AssertQuery(builder,
+            debug:
+            "SELECT \"date_table\".\"id\" AS \"Id\", \"date_table\".\"created_at\" AS \"CreatedAt\" FROM \"date_table\" WHERE \"date_table\".\"id\" = 1 AND \"date_table\".\"created_at\" >= '" + q + "';",
+            sql:
+            "SELECT \"date_table\".\"id\" AS \"Id\", \"date_table\".\"created_at\" AS \"CreatedAt\" FROM \"date_table\" WHERE \"date_table\".\"id\" = @p0 AND \"date_table\".\"created_at\" >= '" + q + "';",
+            expectedParams: new { p0 = 1 });
     }
 }

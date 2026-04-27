@@ -47,7 +47,7 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
             return ConvertTo(Convert.ChangeType(value, Enum.GetUnderlyingType(valueType)));
 
         if (value is DateTime dt)
-            return new ClickHouseValue(dt.ToString("yyyy-MM-dd HH:mm:ss"), false);
+            return new ClickHouseValue(dt.ToString("yyyy-MM-dd HH:mm:ss"), true);
 
         if (_currentParameters != null)
         {
