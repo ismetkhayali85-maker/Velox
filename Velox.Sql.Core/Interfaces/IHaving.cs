@@ -25,16 +25,16 @@ public interface IHaving<TEntity>
 {
     IHaving<TEntity> And();
     IHaving<TEntity> Or();
-    IHaving<TEntity> SetValue(Expression<Func<TEntity, object>> expr, Operators @operator, object value);
-    IHaving<TEntity> Count(Expression<Func<TEntity, object>> expr, Operators @operator, object value);
-    IHaving<TEntity> Sum(Expression<Func<TEntity, object>> expr, Operators @operator, object value);
-    IHaving<TEntity> Avg(Expression<Func<TEntity, object>> expr, Operators @operator, object value);
-    IHaving<TEntity> Min(Expression<Func<TEntity, object>> expr, Operators @operator, object value);
-    IHaving<TEntity> Max(Expression<Func<TEntity, object>> expr, Operators @operator, object value);
-    IHaving<TEntity> CountDistinct(Expression<Func<TEntity, object>> expr, Operators @operator, object value);
-    IHaving<TEntity> IsTrue(Expression<Func<TEntity, object>> expr);
-    IHaving<TEntity> IsFalse(Expression<Func<TEntity, object>> expr);
-    IHaving<TEntity> IsNull(Expression<Func<TEntity, object>> expr);
-    IHaving<TEntity> IsNotNull(Expression<Func<TEntity, object>> expr);
+    IHaving<TEntity> SetValue<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value);
+    IHaving<TEntity> Count<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value);
+    IHaving<TEntity> Sum<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value);
+    IHaving<TEntity> Avg<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value);
+    IHaving<TEntity> Min<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value);
+    IHaving<TEntity> Max<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value);
+    IHaving<TEntity> CountDistinct<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value);
+    IHaving<TEntity> IsTrue<T>(Expression<Func<TEntity, T>> expr);
+    IHaving<TEntity> IsFalse<T>(Expression<Func<TEntity, T>> expr);
+    IHaving<TEntity> IsNull<T>(Expression<Func<TEntity, T>> expr);
+    IHaving<TEntity> IsNotNull<T>(Expression<Func<TEntity, T>> expr);
 }
 

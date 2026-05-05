@@ -1,7 +1,5 @@
 using Velox.Sql.Core.Impl;
 
-#pragma warning disable CS0618
-
 namespace Velox.Sql.Tests.Postgres;
 
 public class AdvancedQueryTests : TestBase

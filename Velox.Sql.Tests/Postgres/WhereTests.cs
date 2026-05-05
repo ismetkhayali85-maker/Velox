@@ -1,5 +1,3 @@
-#pragma warning disable CS0618
-
 using System.Globalization;
 
 namespace Velox.Sql.Tests.Postgres;

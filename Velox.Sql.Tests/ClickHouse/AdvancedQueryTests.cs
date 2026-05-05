@@ -1,8 +1,6 @@
 
 using Velox.Sql.Core.Impl;
 
-#pragma warning disable CS0618
-
 namespace Velox.Sql.Tests.ClickHouse;
 
 public class AdvancedQueryTests : TestBase

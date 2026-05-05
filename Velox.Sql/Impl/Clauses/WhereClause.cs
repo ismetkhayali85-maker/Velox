@@ -33,42 +33,42 @@ public class WhereClause<TEntity> : IWhere<TEntity>
         return this;
     }
 
-    public IWhere<TEntity> IsFalse(Expression<Func<TEntity, object>> expr)
+    public IWhere<TEntity> IsFalse<T>(Expression<Func<TEntity, T>> expr)
     {
         Resolve(expr, out var table, out var column);
         _builder.IsFalse(table, column);
         return this;
     }
 
-    public IWhere<TEntity> IsNotNull(Expression<Func<TEntity, object>> expr)
+    public IWhere<TEntity> IsNotNull<T>(Expression<Func<TEntity, T>> expr)
     {
         Resolve(expr, out var table, out var column);
         _builder.IsNotNull(table, column);
         return this;
     }
 
-    public IWhere<TEntity> IsNull(Expression<Func<TEntity, object>> expr)
+    public IWhere<TEntity> IsNull<T>(Expression<Func<TEntity, T>> expr)
     {
         Resolve(expr, out var table, out var column);
         _builder.IsNull(table, column);
         return this;
     }
 
-    public IWhere<TEntity> IsTrue(Expression<Func<TEntity, object>> expr)
+    public IWhere<TEntity> IsTrue<T>(Expression<Func<TEntity, T>> expr)
     {
         Resolve(expr, out var table, out var column);
         _builder.IsTrue(table, column);
         return this;
     }
 
-    public IWhere<TEntity> Like(Expression<Func<TEntity, object>> expr, object value, bool isNot = false)
+    public IWhere<TEntity> Like<T>(Expression<Func<TEntity, T>> expr, object value, bool isNot = false)
     {
         Resolve(expr, out var table, out var column);
         _builder.Like(table, column, _converter(value), isNot);
         return this;
     }
 
-    public IWhere<TEntity> ILike(Expression<Func<TEntity, object>> expr, object value, bool isNot = false)
+    public IWhere<TEntity> ILike<T>(Expression<Func<TEntity, T>> expr, object value, bool isNot = false)
     {
         Resolve(expr, out var table, out var column);
         _builder.ILike(table, column, _converter(value), isNot);
@@ -87,57 +87,57 @@ public class WhereClause<TEntity> : IWhere<TEntity>
         return this;
     }
 
-    public IWhere<TEntity> SetValue(Expression<Func<TEntity, object>> expr, Operators @operator, object value)
+    public IWhere<TEntity> SetValue<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value)
     {
         Resolve(expr, out var table, out var column);
         _builder.SetValue(table, column, @operator, _converter(value));
         return this;
     }
 
-    public IWhere<TEntity> Between(Expression<Func<TEntity, object>> expr, object firstValue, object secondValue)
+    public IWhere<TEntity> Between<T>(Expression<Func<TEntity, T>> expr, object firstValue, object secondValue)
     {
         Resolve(expr, out var table, out var column);
         _builder.Between(table, column, _converter(firstValue), _converter(secondValue));
         return this;
     }
 
-    public IWhere<TEntity> In(Expression<Func<TEntity, object>> expr, IEnumerable<object> values, bool isNot = false)
+    public IWhere<TEntity> In<T>(Expression<Func<TEntity, T>> expr, IEnumerable<T> values, bool isNot = false)
     {
         Resolve(expr, out var table, out var column);
-        var convertedValues = values.Select(v => _converter(v)).ToList();
+        var convertedValues = values.Select(v => _converter(v!)).ToList();
         _builder.In(table, column, convertedValues, isNot);
         return this;
     }
 
-    public IWhere<TEntity> In(Expression<Func<TEntity, object>> expr, IWhereSubQuery subQuery)
+    public IWhere<TEntity> In<T>(Expression<Func<TEntity, T>> expr, IWhereSubQuery subQuery)
     {
         Resolve(expr, out var table, out var column);
         _builder.In(table, column, new RawSqlBuilder(subQuery.GetSql()));
         return this;
     }
 
-    public IWhere<TEntity> Any(Expression<Func<TEntity, object>> expr, Operators @operator, IWhereSubQuery subQuery)
+    public IWhere<TEntity> Any<T>(Expression<Func<TEntity, T>> expr, Operators @operator, IWhereSubQuery subQuery)
     {
         Resolve(expr, out var table, out var column);
         _builder.Any(table, column, @operator, new RawSqlBuilder(subQuery.GetSql()));
         return this;
     }
 
-    public IWhere<TEntity> All(Expression<Func<TEntity, object>> expr, Operators @operator, IWhereSubQuery subQuery)
+    public IWhere<TEntity> All<T>(Expression<Func<TEntity, T>> expr, Operators @operator, IWhereSubQuery subQuery)
     {
         Resolve(expr, out var table, out var column);
         _builder.All(table, column, @operator, new RawSqlBuilder(subQuery.GetSql()));
         return this;
     }
 
-    public IWhere<TEntity> Some(Expression<Func<TEntity, object>> expr, Operators @operator, IWhereSubQuery subQuery)
+    public IWhere<TEntity> Some<T>(Expression<Func<TEntity, T>> expr, Operators @operator, IWhereSubQuery subQuery)
     {
         Resolve(expr, out var table, out var column);
         _builder.Some(table, column, @operator, new RawSqlBuilder(subQuery.GetSql()));
         return this;
     }
 
-    private void Resolve(Expression<Func<TEntity, object>> expr, out ITable table, out string column)
+    private void Resolve(LambdaExpression expr, out ITable table, out string column)
     {
         var members = ExpressionParser.FindMemberUnaryExpression(expr);
         var member = members.First();

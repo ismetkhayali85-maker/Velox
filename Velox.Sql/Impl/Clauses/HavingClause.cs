@@ -32,7 +32,7 @@ public class HavingClause<TEntity> : IHaving<TEntity>
         return this;
     }
 
-    public IHaving<TEntity> SetValue(Expression<Func<TEntity, object>> expr, Operators @operator, object value)
+    public IHaving<TEntity> SetValue<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value)
     {
         Resolve(expr, out var table, out var column);
         _builder.SetValue(table, column, @operator, _converter(value));
@@ -40,77 +40,77 @@ public class HavingClause<TEntity> : IHaving<TEntity>
     }
 
 
-    public IHaving<TEntity> Count(Expression<Func<TEntity, object>> expr, Operators @operator, object value)
+    public IHaving<TEntity> Count<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value)
     {
         Resolve(expr, out var table, out var column);
         _builder.Count(table, column, @operator, _converter(value));
         return this;
     }
 
-    public IHaving<TEntity> Sum(Expression<Func<TEntity, object>> expr, Operators @operator, object value)
+    public IHaving<TEntity> Sum<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value)
     {
         Resolve(expr, out var table, out var column);
         _builder.Sum(table, column, @operator, _converter(value));
         return this;
     }
 
-    public IHaving<TEntity> Avg(Expression<Func<TEntity, object>> expr, Operators @operator, object value)
+    public IHaving<TEntity> Avg<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value)
     {
         Resolve(expr, out var table, out var column);
         _builder.Avg(table, column, @operator, _converter(value));
         return this;
     }
 
-    public IHaving<TEntity> Min(Expression<Func<TEntity, object>> expr, Operators @operator, object value)
+    public IHaving<TEntity> Min<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value)
     {
         Resolve(expr, out var table, out var column);
         _builder.Min(table, column, @operator, _converter(value));
         return this;
     }
 
-    public IHaving<TEntity> Max(Expression<Func<TEntity, object>> expr, Operators @operator, object value)
+    public IHaving<TEntity> Max<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value)
     {
         Resolve(expr, out var table, out var column);
         _builder.Max(table, column, @operator, _converter(value));
         return this;
     }
 
-    public IHaving<TEntity> CountDistinct(Expression<Func<TEntity, object>> expr, Operators @operator, object value)
+    public IHaving<TEntity> CountDistinct<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value)
     {
         Resolve(expr, out var table, out var column);
         _builder.CountDistinct(table, column, @operator, _converter(value));
         return this;
     }
 
-    public IHaving<TEntity> IsTrue(Expression<Func<TEntity, object>> expr)
+    public IHaving<TEntity> IsTrue<T>(Expression<Func<TEntity, T>> expr)
     {
         Resolve(expr, out var table, out var column);
         _builder.IsTrue(table, column);
         return this;
     }
 
-    public IHaving<TEntity> IsFalse(Expression<Func<TEntity, object>> expr)
+    public IHaving<TEntity> IsFalse<T>(Expression<Func<TEntity, T>> expr)
     {
         Resolve(expr, out var table, out var column);
         _builder.IsFalse(table, column);
         return this;
     }
 
-    public IHaving<TEntity> IsNull(Expression<Func<TEntity, object>> expr)
+    public IHaving<TEntity> IsNull<T>(Expression<Func<TEntity, T>> expr)
     {
         Resolve(expr, out var table, out var column);
         _builder.IsNull(table, column);
         return this;
     }
 
-    public IHaving<TEntity> IsNotNull(Expression<Func<TEntity, object>> expr)
+    public IHaving<TEntity> IsNotNull<T>(Expression<Func<TEntity, T>> expr)
     {
         Resolve(expr, out var table, out var column);
         _builder.IsNotNull(table, column);
         return this;
     }
 
-    private void Resolve(Expression<Func<TEntity, object>> expr, out ITable table, out string column)
+    private void Resolve(LambdaExpression expr, out ITable table, out string column)
     {
         var member = ExpressionParser.FindMemberUnaryExpression(expr).First();
         var map = _config.GetMap(typeof(TEntity));

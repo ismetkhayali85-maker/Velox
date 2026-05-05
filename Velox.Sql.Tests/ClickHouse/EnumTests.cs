@@ -1,5 +1,3 @@
-#pragma warning disable CS0618
-
 namespace Velox.Sql.Tests.ClickHouse;
 
 public class EnumTests : TestBase

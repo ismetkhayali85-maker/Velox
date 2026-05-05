@@ -38,21 +38,21 @@ public interface IWhere<TEntity>
 {
     IWhere<TEntity> And();
     IWhere<TEntity> Or();
-    IWhere<TEntity> IsFalse(Expression<Func<TEntity, object>> expr);
-    IWhere<TEntity> IsNotNull(Expression<Func<TEntity, object>> expr);
-    IWhere<TEntity> IsNull(Expression<Func<TEntity, object>> expr);
-    IWhere<TEntity> IsTrue(Expression<Func<TEntity, object>> expr);
-    IWhere<TEntity> Like(Expression<Func<TEntity, object>> expr, object value, bool isNot = false);
-    IWhere<TEntity> ILike(Expression<Func<TEntity, object>> expr, object value, bool isNot = false);
+    IWhere<TEntity> IsFalse<T>(Expression<Func<TEntity, T>> expr);
+    IWhere<TEntity> IsNotNull<T>(Expression<Func<TEntity, T>> expr);
+    IWhere<TEntity> IsNull<T>(Expression<Func<TEntity, T>> expr);
+    IWhere<TEntity> IsTrue<T>(Expression<Func<TEntity, T>> expr);
+    IWhere<TEntity> Like<T>(Expression<Func<TEntity, T>> expr, object value, bool isNot = false);
+    IWhere<TEntity> ILike<T>(Expression<Func<TEntity, T>> expr, object value, bool isNot = false);
     IWhere<TEntity> Exists(IWhereSubQuery subQuery);
     IWhere<TEntity> NotExists(IWhereSubQuery subQuery);
-    IWhere<TEntity> SetValue(Expression<Func<TEntity, object>> expr, Operators @operator, object value);
+    IWhere<TEntity> SetValue<T>(Expression<Func<TEntity, T>> expr, Operators @operator, object value);
 
-    IWhere<TEntity> Between(Expression<Func<TEntity, object>> expr, object firstValue, object secondValue);
-    IWhere<TEntity> In(Expression<Func<TEntity, object>> expr, IEnumerable<object> values, bool isNot = false);
-    IWhere<TEntity> In(Expression<Func<TEntity, object>> expr, IWhereSubQuery subQuery);
+    IWhere<TEntity> Between<T>(Expression<Func<TEntity, T>> expr, object firstValue, object secondValue);
+    IWhere<TEntity> In<T>(Expression<Func<TEntity, T>> expr, IEnumerable<T> values, bool isNot = false);
+    IWhere<TEntity> In<T>(Expression<Func<TEntity, T>> expr, IWhereSubQuery subQuery);
 
-    IWhere<TEntity> Any(Expression<Func<TEntity, object>> expr, Operators @operator, IWhereSubQuery subQuery);
-    IWhere<TEntity> All(Expression<Func<TEntity, object>> expr, Operators @operator, IWhereSubQuery subQuery);
-    IWhere<TEntity> Some(Expression<Func<TEntity, object>> expr, Operators @operator, IWhereSubQuery subQuery);
+    IWhere<TEntity> Any<T>(Expression<Func<TEntity, T>> expr, Operators @operator, IWhereSubQuery subQuery);
+    IWhere<TEntity> All<T>(Expression<Func<TEntity, T>> expr, Operators @operator, IWhereSubQuery subQuery);
+    IWhere<TEntity> Some<T>(Expression<Func<TEntity, T>> expr, Operators @operator, IWhereSubQuery subQuery);
 }

@@ -21,7 +21,7 @@ public class ParameterizationTests : TestBase
     [Fact]
     public void Where_In_WithParameters_ReturnsCorrectSqlAndDictionary()
     {
-        var ids = new object[] { 1, 2, 3 };
+        var ids = new[] { 1, 2, 3 };
         var builder = VeloxRuntime.Postgres<PostgresTestEntity>();
         builder.Select().Where(w => w.In(x => x.Id, ids));
 

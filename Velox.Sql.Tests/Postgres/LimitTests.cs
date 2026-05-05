@@ -1,5 +1,3 @@
-#pragma warning disable CS0618
-
 namespace Velox.Sql.Tests.Postgres;
 
 public class LimitTests : TestBase

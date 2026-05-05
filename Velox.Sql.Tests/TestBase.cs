@@ -7,7 +7,7 @@ namespace Velox.Sql.Tests;
 public class TestEntity
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 }
 
 public class DateTimeEntity
@@ -25,19 +25,19 @@ public class NullableTestEntity
 public class PostgresTestEntity
 {
     public int Id { get; set; }
-    public string Description { get; set; }
+    public string Description { get; set; } = null!;
 }
 
 public class PostgresNullableTestEntity
 {
     public int Id { get; set; }
-    public string Description { get; set; }
+    public string? Description { get; set; }
 }
 
 public class PostgresJoinEntity
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public int ParentId { get; set; }
 }
 
@@ -71,7 +71,7 @@ public class PostgresUInt128OnlyEntity
 public class ClickHouseJoinEntity
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public int ParentId { get; set; }
 }
 
@@ -305,7 +305,7 @@ public abstract class TestBase
     /// <remarks>Named <c>VeloxRuntime</c> so tests can still qualify types as <c>Velox.Sql.*</c> without shadowing.</remarks>
     protected static IVeloxSql VeloxRuntime { get; private set; } = null!;
 
-    protected void AssertQuery(ISqlBuilder builder, string debug = null, string sql = null, object expectedParams = null)
+    protected void AssertQuery(ISqlBuilder builder, string? debug = null, string? sql = null, object? expectedParams = null)
     {
         // 1. Check Debug SQL
         if (debug != null)
@@ -322,10 +322,11 @@ public abstract class TestBase
 
             if (expectedParams != null)
             {
-                var expectedDict = new Dictionary<string, object>();
+                var expectedDict = new Dictionary<string, object?>();
                 if (expectedParams is Dictionary<string, object> dict)
                 {
-                    expectedDict = dict;
+                    foreach (var kv in dict)
+                        expectedDict[kv.Key] = kv.Value;
                 }
                 else
                 {
