@@ -47,7 +47,13 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
             return ConvertTo(Convert.ChangeType(value, Enum.GetUnderlyingType(valueType)));
 
         if (value is DateTime dt)
-            return new ClickHouseValue(dt.ToString("yyyy-MM-dd HH:mm:ss"), true);
+            return new ClickHouseValue(dt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), true);
+
+        if (value is DateOnly dateOnly)
+            return new ClickHouseValue(dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), true);
+
+        if (value is Guid guid)
+            return new ClickHouseValue(guid.ToString("D", CultureInfo.InvariantCulture), true);
 
         if (_currentParameters != null)
         {
@@ -127,10 +133,16 @@ public abstract class ClickHouseBuilderBase<TEntity> : SqlBuilderCore<TEntity>
         if (type == typeof(string))
             return new ClickHouseValue(valueStr, true);
 
-        if (type == typeof(DateTime))
-            return new ClickHouseValue(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss"), true);
+        if (nonNullableType == typeof(DateTime))
+            return new ClickHouseValue(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), true);
 
-        if (type == typeof(bool))
+        if (nonNullableType == typeof(DateOnly))
+            return new ClickHouseValue(((DateOnly)value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), true);
+
+        if (nonNullableType == typeof(Guid))
+            return new ClickHouseValue(((Guid)value).ToString("D", CultureInfo.InvariantCulture), true);
+
+        if (nonNullableType == typeof(bool))
             return new ClickHouseValue((bool)value ? "1" : "0", false);
 
         return new ClickHouseValue(valueStr, false);

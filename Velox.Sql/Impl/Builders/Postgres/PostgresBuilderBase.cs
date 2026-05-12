@@ -67,6 +67,12 @@ public abstract class PostgresBuilderBase<TEntity> : SqlBuilderCore<TEntity>
         if (value is DateTime dt)
             return new Value(dt);
 
+        if (value is DateOnly dateOnly)
+            return new Value(dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), false, false);
+
+        if (value is Guid guid)
+            return new Value(guid.ToString("D", CultureInfo.InvariantCulture), false, false);
+
         if (_currentParameters != null)
         {
             var paramName = "p" + _currentParameters.Count;

@@ -73,7 +73,7 @@ public class ParameterizationTests : TestBase
     public void Where_DateTime_IsQuotedLiteral_WhileNonDateUsesParameters()
     {
         var from = new DateTime(2026, 4, 27, 5, 36, 5, DateTimeKind.Unspecified);
-        var q = from.ToString(CultureInfo.InvariantCulture);
+        var q = from.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
 
         var builder = VeloxRuntime.Postgres<DateTimeEntity>();
         builder.Select()

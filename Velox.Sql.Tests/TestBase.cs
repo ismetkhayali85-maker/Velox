@@ -22,6 +22,14 @@ public class NullableTestEntity
     public string? Name { get; set; }
 }
 
+public class ClickHouseScalarInsertEntity
+{
+    public int Id { get; set; }
+    public DateTime? At { get; set; }
+    public Guid Uid { get; set; }
+    public DateOnly? Day { get; set; }
+}
+
 public class PostgresTestEntity
 {
     public int Id { get; set; }
@@ -32,6 +40,14 @@ public class PostgresNullableTestEntity
 {
     public int Id { get; set; }
     public string? Description { get; set; }
+}
+
+public class PostgresScalarInsertEntity
+{
+    public int Id { get; set; }
+    public DateTime? At { get; set; }
+    public Guid Uid { get; set; }
+    public DateOnly? Day { get; set; }
 }
 
 public class PostgresJoinEntity
@@ -108,6 +124,19 @@ public class NullableTestEntityMapper : Mapper<NullableTestEntity>
     }
 }
 
+public class ClickHouseScalarInsertEntityMapper : Mapper<ClickHouseScalarInsertEntity>
+{
+    public ClickHouseScalarInsertEntityMapper()
+    {
+        Table("ch_scalar_insert");
+        Map(x => x.Id).Column("id");
+        Map(x => x.At).Column("at").Nullable();
+        Map(x => x.Uid).Column("uid");
+        Map(x => x.Day).Column("day").Nullable();
+        Build();
+    }
+}
+
 public class PostgresTestEntityMapper : Mapper<PostgresTestEntity>
 {
     public PostgresTestEntityMapper()
@@ -126,6 +155,19 @@ public class PostgresNullableTestEntityMapper : Mapper<PostgresNullableTestEntit
         Table("pg_nullable_table");
         Map(x => x.Id).Column("id");
         Map(x => x.Description).Column("description").Nullable();
+        Build();
+    }
+}
+
+public class PostgresScalarInsertEntityMapper : Mapper<PostgresScalarInsertEntity>
+{
+    public PostgresScalarInsertEntityMapper()
+    {
+        Table("pg_scalar_insert");
+        Map(x => x.Id).Column("id");
+        Map(x => x.At).Column("at").Nullable();
+        Map(x => x.Uid).Column("uid");
+        Map(x => x.Day).Column("day").Nullable();
         Build();
     }
 }
@@ -278,6 +320,7 @@ public abstract class TestBase
             new PostgresTestEntityMapper(),
             new DateTimeEntityMapper(),
             new PostgresNullableTestEntityMapper(),
+            new PostgresScalarInsertEntityMapper(),
             new PostgresJoinEntityMapper(),
             new PostgresUnsignedProbeEntityMapper(),
             new PostgresUIntOnlyEntityMapper(),
@@ -293,6 +336,7 @@ public abstract class TestBase
             new TestEntityMapper(),
             new DateTimeEntityMapper(),
             new NullableTestEntityMapper(),
+            new ClickHouseScalarInsertEntityMapper(),
             new ClickHouseJoinEntityMapper(),
             new EnumPersistenceClickHouseMapper(),
             new EnumNullableClickHouseMapper()

@@ -66,8 +66,8 @@ public class WhereTests : TestBase
     {
         var from = new DateTime(2026, 4, 27, 5, 36, 5, DateTimeKind.Unspecified);
         var to = new DateTime(2026, 12, 30, 21, 0, 0, DateTimeKind.Unspecified);
-        var qFrom = from.ToString(CultureInfo.InvariantCulture);
-        var qTo = to.ToString(CultureInfo.InvariantCulture);
+        var qFrom = from.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        var qTo = to.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
 
         var sql = VeloxRuntime.Postgres<DateTimeEntity>()
             .Where(x => x.CreatedAt >= from && x.CreatedAt <= to)

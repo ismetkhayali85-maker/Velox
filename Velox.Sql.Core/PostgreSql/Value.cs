@@ -23,7 +23,7 @@ public sealed class Value : IValue
     public Value(DateTime value)
     {
         _sql = new StringBuilder("'")
-            .Append(value.ToString(CultureInfo.InvariantCulture))
+            .Append(value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))
             .Append("'");
     }
 
